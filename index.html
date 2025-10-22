@@ -1,0 +1,1703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algorithm Playground</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Inter font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Sorting bar styles */
+        .sort-bar {
+            width: 100%;
+            transition: height 0.3s ease, background-color 0.3s ease;
+            margin: 0 1px;
+            border-radius: 4px 4px 0 0;
+        }
+
+        /* Pathfinding grid cell styles */
+        .grid-cell {
+            width: 100%;
+            padding-bottom: 100%; /* Creates a perfect square aspect ratio */
+            position: relative;
+            border: 1px solid #374151; /* gray-700 */
+            transition: background-color 0.1s ease, transform 0.2s ease;
+        }
+        
+        .grid-cell.start { background-color: #10B981; } /* emerald-500 */
+        .grid-cell.end { background-color: #EF4444; } /* red-500 */
+        .grid-cell.wall { 
+            background-color: #111827; /* gray-900 */
+            transform: scale(0.9);
+        }
+        .grid-cell.visited { 
+            background-color: #3B82F6; /* blue-500 */
+            animation: pulse-visited 0.5s ease;
+        }
+        .grid-cell.path { 
+            background-color: #F59E0B; /* amber-500 */
+            animation: pulse-path 0.8s ease;
+        }
+        
+        @keyframes pulse-visited {
+            0% { transform: scale(0.7); border-radius: 50%; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); border-radius: 0; }
+        }
+        @keyframes pulse-path {
+            0% { transform: scale(0.7); }
+            100% { transform: scale(1); }
+        }
+
+        /* Custom slider track */
+        input[type="range"]::-webkit-slider-runnable-track {
+            background: #374151; /* gray-700 */
+            height: 8px;
+            border-radius: 4px;
+        }
+        input[type="range"]::-moz-range-track {
+            background: #374151; /* gray-700 */
+            height: 8px;
+            border-radius: 4px;
+        }
+        /* Custom slider thumb */
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3B82F6; /* blue-500 */
+            cursor: pointer;
+            margin-top: -6px; /* Center thumb on track */
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3B82F6; /* blue-500 */
+            cursor: pointer;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1F2937; /* gray-800 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4B5563; /* gray-600 */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6B7280; /* gray-500 */
+        }
+
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-gray-800 shadow-lg rounded-b-lg sticky top-0 z-10">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl md:text-3xl font-bold text-white">Algorithm Playground</h1>
+            <!-- Tabs -->
+            <div class="flex flex-wrap bg-gray-700 rounded-lg p-1">
+                <button id="tab-sorting" class="tab-btn bg-blue-600 text-white px-3 py-2 rounded-md text-sm font-medium">Sorting</button>
+                <button id="tab-searching" class="tab-btn text-gray-300 px-3 py-2 rounded-md text-sm font-medium">Searching</button>
+                <button id="tab-pathfinding" class="tab-btn text-gray-300 px-3 py-2 rounded-md text-sm font-medium">Pathfinding</button>
+                <button id="tab-dp" class="tab-btn text-gray-300 px-3 py-2 rounded-md text-sm font-medium">Dynamic Programming</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto p-4 flex-grow flex flex-col lg:flex-row gap-4">
+
+        <!-- Left Panel: Controls & Complexity -->
+        <div class="w-full lg:w-1/3 xl:w-1/4 flex flex-col gap-4">
+            
+            <!-- Controls Panel -->
+            <div class="bg-gray-800 p-4 rounded-lg shadow-xl">
+                <h2 class="text-xl font-bold mb-4 border-b border-gray-700 pb-2">Controls</h2>
+                
+                <!-- Sorting Controls (Visible by default) -->
+                <div id="controls-sorting">
+                    <div class="mb-4">
+                        <label for="algo-select-sorting" class="block text-sm font-medium text-gray-400 mb-1">Algorithm</label>
+                        <select id="algo-select-sorting" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="bubbleSort">Bubble Sort</option>
+                            <option value="mergeSort">Merge Sort</option>
+                            <option value="quickSort">Quick Sort</option>
+                            <option value="insertionSort">Insertion Sort</option>
+                            <option value="selectionSort">Selection Sort</option>
+                            <option value="heapSort">Heap Sort</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label for="speed-slider-sorting" class="block text-sm font-medium text-gray-400 mb-1">Speed</label>
+                        <input id="speed-slider-sorting" type="range" min="10" max="500" value="100" class="w-full h-2 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                     <div class="mb-4">
+                        <label for="size-slider-sorting" class="block text-sm font-medium text-gray-400 mb-1">Array Size</label>
+                        <input id="size-slider-sorting" type="range" min="10" max="100" value="50" class="w-full h-2 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <button id="btn-generate-array" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">Generate New Array</button>
+                        <button id="btn-start-sorting" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">Start Sort</button>
+                    </div>
+                </div>
+
+                <!-- Searching Controls (Hidden by default) -->
+                <div id="controls-searching" class="hidden">
+                    <div class="mb-4">
+                        <label for="algo-select-searching" class="block text-sm font-medium text-gray-400 mb-1">Algorithm</label>
+                        <select id="algo-select-searching" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="linearSearch">Linear Search</option>
+                            <option value="binarySearch">Binary Search</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label for="target-input-searching" class="block text-sm font-medium text-gray-400 mb-1">Target Value (10-100)</label>
+                        <input id="target-input-searching" type="number" min="10" max="100" value="42" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2">
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <button id="btn-generate-array-searching" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">New Array</button>
+                        <button id="btn-start-searching" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">Start Search</button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">Note: Binary Search will automatically sort the array first.</p>
+                </div>
+
+                <!-- Pathfinding Controls (Hidden by default) -->
+                <div id="controls-pathfinding" class="hidden">
+                    <div class="mb-4">
+                        <label for="algo-select-pathfinding" class="block text-sm font-medium text-gray-400 mb-1">Algorithm</label>
+                        <select id="algo-select-pathfinding" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="dijkstra">Dijkstra's Algorithm</option>
+                            <option value="aStar">A* Search</option>
+                            <option value="bfs">Breadth-First Search (BFS)</option>
+                            <option value="dfs">Depth-First Search (DFS)</option>
+                        </select>
+                    </div>
+                    <p class="text-sm text-gray-400 mb-4">
+                        Click/Drag to add walls. <br>
+                        Drag Start (Green) & End (Red) nodes.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <button id="btn-reset-grid" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">Reset Grid</button>
+                        <button id="btn-start-pathfinding" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">Start Search</button>
+                    </div>
+                </div>
+
+                <!-- DP Controls (Hidden by default) -->
+                <div id="controls-dp" class="hidden">
+                    <div class="mb-4">
+                        <label for="algo-select-dp" class="block text-sm font-medium text-gray-400 mb-1">Algorithm</label>
+                        <select id="algo-select-dp" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="fibonacci">Fibonacci (Memoized)</option>
+                            <option value="knapsack">0/1 Knapsack</option>
+                            <option value="lcs">Longest Common Subsequence</option>
+                        </select>
+                    </div>
+                    <!-- Dynamic controls for DP -->
+                    <div id="dp-inputs-container">
+                        <!-- JS will populate this -->
+                    </div>
+                    <button id="btn-start-dp" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 mt-4">Start</button>
+                </div>
+            </div>
+
+            <!-- Complexity Panel -->
+            <div class="bg-gray-800 p-4 rounded-lg shadow-xl flex-grow">
+                <h2 class="text-xl font-bold mb-4 border-b border-gray-700 pb-2">Complexity Analysis</h2>
+                <div id="complexity-info">
+                    <!-- Content is dynamically inserted by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Visualizer -->
+        <div class="w-full lg:w-2/3 xl:w-3/4 bg-gray-800 p-4 rounded-lg shadow-xl flex items-center justify-center min-h-[400px] lg:min-h-[60vh]">
+            
+            <!-- Sorting Visualizer (Visible by default) -->
+            <div id="visualizer-sorting" class="w-full h-full flex items-end justify-center gap-[1px]">
+                <!-- Bars are dynamically inserted by JS -->
+            </div>
+
+            <!-- Searching Visualizer (Hidden by default) -->
+            <div id="visualizer-searching" class="hidden w-full h-full flex items-end justify-center gap-[1px]">
+                <!-- Bars are dynamically inserted by JS -->
+            </div>
+
+            <!-- Pathfinding Visualizer (Hidden by default) -->
+            <div id="visualizer-pathfinding" class="hidden w-full h-full aspect-square max-w-[80vh]">
+                <div id="grid-container" class="grid w-full h-full">
+                    <!-- Grid cells are dynamically inserted by JS -->
+                </div>
+            </div>
+
+            <!-- DP Visualizer (Hidden by default) -->
+            <div id="visualizer-dp" class="hidden w-full h-full flex-col items-center justify-center p-4">
+                <p class="text-gray-400 text-lg">Dynamic Programming Visualizer</p>
+                <p class="text-gray-500">Visualization for this algorithm is coming soon!</p>
+                <!-- DP Table/Result will go here -->
+                <div id="dp-output-container" class="w-full h-full mt-4 overflow-auto"></div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- JavaScript -->
+    <script type="module">
+        // --- STATE MANAGEMENT ---
+        let currentView = 'sorting'; // 'sorting', 'searching', 'pathfinding', 'dp'
+        let currentSortingAlgorithm = 'bubbleSort';
+        let currentSearchingAlgorithm = 'linearSearch';
+        let currentPathfindingAlgorithm = 'dijkstra';
+        let currentDPAlgorithm = 'fibonacci';
+        
+        let sortSpeed = 100;
+        let arraySize = 50;
+        let sortingArray = [];
+        let searchingArray = []; // For the searching tab
+        let isSorting = false;
+        let isSearching = false;
+
+        const GRID_ROWS = 25;
+        const GRID_COLS = 25;
+        let grid = [];
+        let startNode = { row: 5, col: 5 };
+        let endNode = { row: 19, col: 19 };
+        let isDrawingWalls = false;
+        let isMovingStart = false;
+        let isMovingEnd = false;
+        let isPathfinding = false;
+        let isDPRunning = false;
+
+        // --- COMPLEXITY DATA ---
+        const complexityData = {
+            bubbleSort: {
+                title: 'Bubble Sort',
+                time: {
+                    best: 'O(n)',
+                    average: 'O(n²)',
+                    worst: 'O(n²)',
+                },
+                space: 'O(1)',
+                explanation: `
+                    <p class="mb-2"><strong class="text-gray-300">Time:</strong> It has an average and worst-case time of <code class="code">O(n²)</code> because it uses nested loops to compare and swap elements. For each of the 'n' elements, it may scan through 'n' other elements.</p>
+                    <p class="mb-2"><strong class="text-gray-300">Best Case:</strong> The best case is <code class="code">O(n)</code>, which occurs if the array is already sorted and an optimized version is used that stops after an iteration with no swaps.</p>
+                    <p><strong class="text-gray-300">Space:</strong> It's an in-place sorting algorithm, meaning it only requires a constant amount of extra memory (<code class="code">O(1)</code>) for temporary variables during swaps.</p>
+                `
+            },
+            insertionSort: {
+                title: 'Insertion Sort',
+                time: {
+                    best: 'O(n)',
+                    average: 'O(n²)',
+                    worst: 'O(n²)',
+                },
+                space: 'O(1)',
+                explanation: `
+                    <p class="mb-2"><strong class="text-gray-300">Time:</strong> The worst/average case is <code class="code">O(n²)</code>. It iterates through the array, and for each element, it shifts all larger elements to its right. This results in nested loop behavior.</p>
+                    <p class="mb-2"><strong class="text-gray-300">Best Case:</strong> The best case is <code class="code">O(n)</code>, which occurs if the array is already sorted. The inner loop condition will never be met, so it just does a single pass.</p>
+                    <p><strong class="text-gray-300">Space:</strong> It is an in-place, stable sorting algorithm with <code class="code">O(1)</code> space complexity.</p>
+                `
+            },
+            selectionSort: {
+                title: 'Selection Sort',
+                time: {
+                    best: 'O(n²)',
+                    average: 'O(n²)',
+                    worst: 'O(n²)',
+                },
+                space: 'O(1)',
+                explanation: `
+                    <p class="mb-2"><strong class="text-gray-300">Time:</strong> The time complexity is always <code class="code">O(n²)</code>, regardless of the initial order. It performs two nested loops: the outer loop selects an element, and the inner loop finds the minimum element in the remaining unsorted portion.</p>
+                    <p><strong class="text-gray-300">Space:</strong> It is an in-place algorithm with <code class="code">O(1)</code> space complexity. It only needs one extra variable to store the index of the current minimum.</p>
+                `
+            },
+            heapSort: {
+                title: 'Heap Sort',
+                time: {
+                    best: 'O(n log n)',
+                    average: 'O(n log n)',
+                    worst: 'O(n log n)',
+                },
+                space: 'O(1)',
+                explanation: `
+                    <p class="mb-2"><strong class="text-gray-300">Time:</strong> It has a consistent <code class="code">O(n log n)</code> time complexity. Building the initial max-heap takes <code class="code">O(n)</code> time. Then, it repeatedly extracts the max element (root) and heapifies the rest, which takes <code class="code">O(log n)</code> time for each of the 'n' elements.</p>
+                    <p><strong class="text-gray-300">Space:</strong> It is an in-place sort with <code class="code">O(1)</code> space. The heap is built within the array itself. (Note: if recursion is used for heapify, it may take O(log n) stack space).</p>
+                `
+            },
+            mergeSort: {
+                title: 'Merge Sort',
+                time: {
+                    best: 'O(n log n)',
+                    average: 'O(n log n)',
+                    worst: 'O(n log n)',
+                },
+                space: 'O(n)',
+                explanation: `
+                    <p class="mb-2"><strong class="text-gray-300">Time:</strong> As a divide-and-conquer algorithm, it consistently performs at <code class="code">O(n log n)</code>. The 'log n' comes from recursively splitting the array, and the 'n' comes from the work done at each level to merge the sub-arrays.</p>
+                    <p><strong class="text-gray-300">Space:</strong> It requires <code class="code">O(n)</code> auxiliary space because it needs to create temporary arrays to merge the sorted halves. It is not an in-place sort.</p>
+                `
+            },
+            quickSort: {
+                title: 'Quick Sort',
+                time: {
+                    best: 'O(n log n)',
+                    average: 'O(n log n)',
+                    worst: 'O(n²)',
+                },
+                space: 'O(log n)',
+                explanation: `
+                    <p class="mb-2"><strong class="text-gray-300">Time (Average):</strong> Like Merge Sort, its average time is <code class="code">O(n log n)</code>. It works by partitioning the array and recursively sorting the partitions.</p>
+                    <p class="mb-2"><strong class="text-gray-300">Worst Case:</strong> The worst case is <code class="code">O(n²)</code>. This happens when the chosen pivot is consistently the smallest or largest element, leading to unbalanced partitions (e.g., on an already-sorted array).</p>
+                    <p><strong class="text-gray-300">Space:</strong> The space complexity is <code class="code">O(log n)</code> on average, which accounts for the space used by the recursion call stack. In the worst case, this can be <code class="code">O(n)</code>.</p>
+                `
+            },
+            linearSearch: {
+                title: 'Linear Search',
+                time: {
+                    best: 'O(1)',
+                    average: 'O(n)',
+                    worst: 'O(n)',
+                },
+                space: 'O(1)',
+                explanation: `
+                    <p class="mb-2"><strong class="text-gray-300">Time:</strong> It sequentially checks each element of the list until a match is found or the whole list has been searched. In the worst case (<code class="code">O(n)</code>), the element is at the end or not present. In the best case (<code class="code">O(1)</code>), it's the first element.</p>
+                    <p><strong class="text-gray-300">Space:</strong> It requires no extra space, so it's <code class="code">O(1)</code>.</p>
+                `
+            },
+            binarySearch: {
+                title: 'Binary Search',
+                time: {
+                    best: 'O(1)',
+                    average: 'O(log n)',
+                    worst: 'O(log n)',
+                },
+                space: 'O(1)',
+                explanation: `
+                    <p class="mb-2"><strong class="text-gray-300">Time:</strong> This algorithm works on <strong class="text-gray-300">sorted arrays</strong>. It repeatedly divides the search interval in half. This "divide and conquer" approach leads to a logarithmic time complexity <code class="code">O(log n)</code>. The best case is <code class="code">O(1)</code> if the target is the middle element.</p>
+                    <p><strong class="text-gray-300">Space:</strong> The iterative version has <code class="code">O(1)</code> space. A recursive version would require <code class="code">O(log n)</code> stack space.</p>
+                `
+            },
+            dijkstra: {
+                title: "Dijkstra's Algorithm",
+                time: {
+                    best: 'O(E + V log V)',
+                    average: 'O(E + V log V)',
+                    worst: 'O(E + V log V)',
+                },
+                space: 'O(V)',
+                explanation: `
+                    <p class="mb-2"><strong class="text-gray-300">Notation:</strong> 'V' is the number of vertices (nodes/cells) and 'E' is the number of edges (connections).</p>
+                    <p class="mb-2"><strong class="text-gray-300">Time:</strong> When implemented with a min-priority queue (like a binary heap), the time complexity is <code class="code">O(E log V)</code> or <code class="code">O((V + E) log V)</code>. In our grid, E is at most 4V, so this simplifies to <code class="code">O(V log V)</code>. It explores nodes in order of increasing distance from the start.</p>
+                    <p><strong class="text-gray-300">Space:</strong> The algorithm needs to store distances and 'previous node' references for all vertices, leading to a space complexity of <code class="code">O(V)</code>.</p>
+                `
+            },
+            aStar: {
+                title: "A* Search",
+                time: {
+                    best: 'O(V+E)',
+                    average: 'O(V+E)',
+                    worst: 'O(V²)',
+                },
+                space: 'O(V)',
+                explanation: `
+                    <p class="mb-2"><strong class="text-gray-300">Time:</strong> The time complexity heavily depends on the heuristic 'h'. In the best case, with a perfect heuristic, it runs as fast as <code class="code">O(V+E)</code>. In the worst case (e.g., on a grid), it can degrade to <code class="code">O(V²)</code>, similar to Dijkstra.</p>
+                    <p class="mb-2"><strong class="text-gray-300">Logic:</strong> A* is an extension of Dijkstra. It optimizes the search by using a heuristic function <code class="code">f(n) = g(n) + h(n)</code>, where <code class="code">g(n)</code> is the cost from the start and <code class="code">h(n)</code> is the estimated cost to the end. It prioritizes nodes that seem closer to the goal.</p>
+                    <p><strong class="text-gray-300">Space:</strong> It needs to store all nodes in the open list (priority queue), leading to <code class="code">O(V)</code> space complexity.</p>
+                `
+            },
+            bfs: {
+                title: "Breadth-First Search (BFS)",
+                time: {
+                    best: 'O(V + E)',
+                    average: 'O(V + E)',
+                    worst: 'O(V + E)',
+                },
+                space: 'O(V)',
+                explanation: `
+                    <p class="mb-2"><strong class="text-gray-300">Time:</strong> BFS explores the graph layer by layer. It must visit every vertex 'V' and check every edge 'E' in the worst case, so its time complexity is <code class="code">O(V + E)</code>. In our grid, this is <code class="code">O(V)</code>.</p>
+                    <p class="mb-2"><strong class="text-gray-300">Logic:</strong> It uses a Queue (First-In, First-Out) to explore neighbors. This guarantees that it finds the shortest path in terms of the number of edges for an unweighted graph.</p>
+                    <p><strong class="text-gray-300">Space:</strong> The queue can, in the worst case, hold all vertices at a given "layer". For a dense graph, this can be <code class="code">O(V)</code>.</p>
+                `
+            },
+            dfs: {
+                title: "Depth-First Search (DFS)",
+                time: {
+                    best: 'O(V + E)',
+                    average: 'O(V + E)',
+                    worst: 'O(V + E)',
+                },
+                space: 'O(V)',
+                explanation: `
+                    <p class="mb-2"><strong class="text-gray-300">Time:</strong> Like BFS, DFS must visit every vertex and edge in the worst case, leading to a <code class="code">O(V + E)</code> complexity.</p>
+                    <p class="mb-2"><strong class="text-gray-300">Logic:</strong> It uses a Stack (Last-In, First-Out) to explore. It goes as deep as possible down one path before backtracking. It is good for finding *if* a path exists, but it is not guaranteed to find the shortest path.</p>
+                    <p><strong class="text-gray-300">Space:</strong> The space complexity is determined by the size of the recursion stack (or explicit stack), which in the worst case can be <code class="code">O(V)</code> if the graph is a single long path.</p>
+                `
+            },
+            fibonacci: {
+                title: "Fibonacci (Memoized DP)",
+                time: {
+                    best: 'O(n)',
+                    average: 'O(n)',
+                    worst: 'O(n)',
+                },
+                space: 'O(n)',
+                explanation: `
+                    <p class="mb-2"><strong class="text-gray-300">Time:</strong> A naive recursive solution is <code class="code">O(2ⁿ)</code> due to repeated calculations. By using memoization (a form of DP), we store the result of each <code class="code">fib(k)</code>. Each value from 1 to 'n' is computed only once, leading to a <code class="code">O(n)</code> time complexity.</p>
+                    <p><strong class="text-gray-300">Space:</strong> We need to store the computed values in an array or map up to 'n', so the space complexity is <code class="code">O(n)</code>.</p>
+                `
+            },
+            knapsack: {
+                title: "0/1 Knapsack (DP)",
+                time: {
+                    best: 'O(N * W)',
+                    average: 'O(N * W)',
+                    worst: 'O(N * W)',
+                },
+                space: 'O(N * W)',
+                explanation: `
+                    <p class="mb-2"><strong class="text-gray-300">Notation:</strong> 'N' is the number of items, 'W' is the capacity of the knapsack.</p>
+                    <p class="mb-2"><strong class="text-gray-300">Time:</strong> The standard DP solution involves building a 2D table of size <code class="code">N x W</code>. Each cell <code class="code">dp[i][w]</code> is computed in constant time. Therefore, the total time is <code class="code">O(N * W)</code>.</p>
+                    <p><strong class="text-gray-300">Space:</strong> Storing this 2D table requires <code class="code">O(N * W)</code> space. This can be optimized to <code class="code">O(W)</code> space by only storing the previous row.</p>
+                `
+            },
+            lcs: {
+                title: "Longest Common Subsequence (DP)",
+                time: {
+                    best: 'O(M * N)',
+                    average: 'O(M * N)',
+                    worst: 'O(M * N)',
+                },
+                space: 'O(M * N)',
+                explanation: `
+                    <p class="mb-2"><strong class="text-gray-300">Notation:</strong> 'M' and 'N' are the lengths of the two input strings.</p>
+                    <p class="mb-2"><strong class="text-gray-300">Time:</strong> Similar to Knapsack, this algorithm builds a 2D table of size <code class="code">M x N</code>. Each cell <code class="code">dp[i][j]</code> (the LCS of string1[0..i] and string2[0..j]) is computed in constant time, leading to a <code class="code">O(M * N)</code> runtime.</p>
+                    <p><strong class="text-gray-300">Space:</strong> The 2D table requires <code class="code">O(M * N)</code> space to store all subproblem solutions. This is needed to reconstruct the actual subsequence.</p>
+                `
+            }
+        };
+
+        // --- DOM ELEMENTS ---
+        const tabSorting = document.getElementById('tab-sorting');
+        const tabSearching = document.getElementById('tab-searching');
+        const tabPathfinding = document.getElementById('tab-pathfinding');
+        const tabDp = document.getElementById('tab-dp');
+        
+        const controlsSorting = document.getElementById('controls-sorting');
+        const controlsSearching = document.getElementById('controls-searching');
+        const controlsPathfinding = document.getElementById('controls-pathfinding');
+        const controlsDp = document.getElementById('controls-dp');
+        
+        const visualizerSorting = document.getElementById('visualizer-sorting');
+        const visualizerSearching = document.getElementById('visualizer-searching');
+        const visualizerPathfinding = document.getElementById('visualizer-pathfinding');
+        const visualizerDp = document.getElementById('visualizer-dp');
+        const gridContainer = document.getElementById('grid-container');
+
+        const algoSelectSorting = document.getElementById('algo-select-sorting');
+        const speedSliderSorting = document.getElementById('speed-slider-sorting');
+        const sizeSliderSorting = document.getElementById('size-slider-sorting');
+        const btnGenerateArray = document.getElementById('btn-generate-array');
+        const btnStartSorting = document.getElementById('btn-start-sorting');
+
+        const algoSelectSearching = document.getElementById('algo-select-searching');
+        const targetInputSearching = document.getElementById('target-input-searching');
+        const btnGenerateArraySearching = document.getElementById('btn-generate-array-searching');
+        const btnStartSearching = document.getElementById('btn-start-searching');
+
+        const algoSelectPathfinding = document.getElementById('algo-select-pathfinding');
+        const btnResetGrid = document.getElementById('btn-reset-grid');
+        const btnStartPathfinding = document.getElementById('btn-start-pathfinding');
+
+        const algoSelectDp = document.getElementById('algo-select-dp');
+        const dpInputsContainer = document.getElementById('dp-inputs-container');
+        const dpOutputContainer = document.getElementById('dp-output-container');
+        const btnStartDp = document.getElementById('btn-start-dp');
+
+        const complexityInfo = document.getElementById('complexity-info');
+
+        // --- UTILITY FUNCTIONS ---
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        const disableControls = (isSortingView) => {
+            if (isSortingView) {
+                isSorting = true;
+                btnStartSorting.disabled = true;
+                btnGenerateArray.disabled = true;
+                algoSelectSorting.disabled = true;
+                sizeSliderSorting.disabled = true;
+                btnStartSorting.classList.add('opacity-50', 'cursor-not-allowed');
+                btnGenerateArray.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                isPathfinding = true;
+                btnStartPathfinding.disabled = true;
+                btnResetGrid.disabled = true;
+                algoSelectPathfinding.disabled = true;
+                btnStartPathfinding.classList.add('opacity-50', 'cursor-not-allowed');
+                btnResetGrid.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        };
+        const enableControls = (isSortingView) => {
+             if (isSortingView) {
+                isSorting = false;
+                btnStartSorting.disabled = false;
+                btnGenerateArray.disabled = false;
+                algoSelectSorting.disabled = false;
+                sizeSliderSorting.disabled = false;
+                btnStartSorting.classList.remove('opacity-50', 'cursor-not-allowed');
+                btnGenerateArray.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                isPathfinding = false;
+                btnStartPathfinding.disabled = false;
+                btnResetGrid.disabled = false;
+                algoSelectPathfinding.disabled = false;
+                btnStartPathfinding.classList.remove('opacity-50', 'cursor-not-allowed');
+                btnResetGrid.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        };
+
+        // --- VIEW SWITCHING ---
+        const switchView = (view) => {
+            currentView = view;
+            
+            // Reset all tabs
+            [tabSorting, tabSearching, tabPathfinding, tabDp].forEach(tab => {
+                tab.classList.remove('bg-blue-600', 'text-white');
+                tab.classList.add('text-gray-300');
+            });
+            // Hide all controls
+            [controlsSorting, controlsSearching, controlsPathfinding, controlsDp].forEach(c => c.classList.add('hidden'));
+            // Hide all visualizers
+            [visualizerSorting, visualizerSearching, visualizerPathfinding, visualizerDp].forEach(v => v.classList.add('hidden'));
+            visualizerSorting.classList.remove('flex'); // Special case for flex
+            visualizerSearching.classList.remove('flex'); // Special case for flex
+
+            if (view === 'sorting') {
+                tabSorting.classList.add('bg-blue-600', 'text-white');
+                controlsSorting.classList.remove('hidden');
+                visualizerSorting.classList.remove('hidden');
+                visualizerSorting.classList.add('flex');
+                if (sortingArray.length === 0) generateArray();
+
+            } else if (view === 'searching') {
+                tabSearching.classList.add('bg-blue-600', 'text-white');
+                controlsSearching.classList.remove('hidden');
+                visualizerSearching.classList.remove('hidden');
+                visualizerSearching.classList.add('flex');
+                if (searchingArray.length === 0) generateSearchingArray();
+
+            } else if (view === 'pathfinding') {
+                tabPathfinding.classList.add('bg-blue-600', 'text-white');
+                controlsPathfinding.classList.remove('hidden');
+                visualizerPathfinding.classList.remove('hidden');
+                if (grid.length === 0) createGrid();
+
+            } else if (view === 'dp') {
+                tabDp.classList.add('bg-blue-600', 'text-white');
+                controlsDp.classList.remove('hidden');
+                visualizerDp.classList.remove('hidden');
+                visualizerDp.classList.add('flex'); // Use flex for column layout
+                updateDPInputs();
+            }
+            
+            updateComplexityInfo();
+        };
+
+        // --- DP INPUTS LOGIC ---
+        const updateDPInputs = () => {
+            currentDPAlgorithm = algoSelectDp.value;
+            dpInputsContainer.innerHTML = ''; // Clear old inputs
+            
+            const baseInputClass = "w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 mt-1";
+            const baseLabelClass = "block text-sm font-medium text-gray-400";
+
+            if (currentDPAlgorithm === 'fibonacci') {
+                dpInputsContainer.innerHTML = `
+                    <div class="mb-4">
+                        <label for="dp-fib-n" class="${baseLabelClass}">Fibonacci (n):</label>
+                        <input id="dp-fib-n" type="number" min="0" max="50" value="10" class="${baseInputClass}">
+                    </div>
+                `;
+            } else if (currentDPAlgorithm === 'knapsack') {
+                dpInputsContainer.innerHTML = `
+                    <div class="mb-4">
+                        <label for="dp-knapsack-weights" class="${baseLabelClass}">Weights (comma-sep):</label>
+                        <input id="dp-knapsack-weights" type="text" value="1,2,4,5" class="${baseInputClass}">
+                    </div>
+                    <div class="mb-4">
+                        <label for="dp-knapsack-values" class="${baseLabelClass}">Values (comma-sep):</label>
+                        <input id="dp-knapsack-values" type="text" value="5,4,8,6" class="${baseInputClass}">
+                    </div>
+                    <div class="mb-4">
+                        <label for="dp-knapsack-capacity" class="${baseLabelClass}">Capacity:</label>
+                        <input id="dp-knapsack-capacity" type="number" min="1" value="5" class="${baseInputClass}">
+                    </div>
+                `;
+            } else if (currentDPAlgorithm === 'lcs') {
+                dpInputsContainer.innerHTML = `
+                    <div class="mb-4">
+                        <label for="dp-lcs-s1" class="${baseLabelClass}">String 1:</label>
+                        <input id="dp-lcs-s1" type="text" value="AGGTAB" class="${baseInputClass}">
+                    </div>
+                    <div class="mb-4">
+                        <label for="dp-lcs-s2" class="${baseLabelClass}">String 2:</label>
+                        <input id="dp-lcs-s2" type="text" value="GXTXAYB" class="${baseInputClass}">
+                    </div>
+                `;
+            }
+            updateComplexityInfo();
+        };
+
+        // --- COMPLEXITY PANEL LOGIC ---
+        const updateComplexityInfo = () => {
+            let algoKey;
+            switch (currentView) {
+                case 'sorting': algoKey = currentSortingAlgorithm; break;
+                case 'searching': algoKey = currentSearchingAlgorithm; break;
+                case 'pathfinding': algoKey = currentPathfindingAlgorithm; break;
+                case 'dp': algoKey = currentDPAlgorithm; break;
+                default: algoKey = 'bubbleSort';
+            }
+            
+            const data = complexityData[algoKey];
+
+            if (!data) {
+                complexityInfo.innerHTML = '<p>Select an algorithm to see its analysis.</p>';
+                return;
+            }
+            
+            // Shared style for code blocks
+            const codeStyle = "font-mono bg-gray-700 px-2 py-1 rounded-md text-sm text-blue-300";
+
+            complexityInfo.innerHTML = `
+                <h3 class="text-2xl font-bold text-white mb-3">${data.title}</h3>
+                <div class="space-y-3 text-gray-400 text-sm">
+                    <div>
+                        <h4 class="font-semibold text-gray-300 mb-1">Time Complexity</h4>
+                        <ul class="list-disc list-inside pl-2 space-y-1">
+                            <li>Best: <code class="${codeStyle}">${data.time.best}</code></li>
+                            <li>Average: <code class="${codeStyle}">${data.time.average}</code></li>
+                            <li>Worst: <code class="${codeStyle}">${data.time.worst}</code></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-300 mb-1">Space Complexity</h4>
+                        <p class="pl-2">Total: <code class="${codeStyle}">${data.space}</code></p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-300 mb-1">Explanation</h4>
+                        <div class="pl-2 space-y-2 text-gray-400">${data.explanation.replace(/<code class="code">/g, `<code class="${codeStyle}">`)}</div>
+                    </div>
+                </div>
+            `;
+        };
+
+        // --- SORTING ALGORITHM LOGIC ---
+        
+        // 1. Generate Array
+        const generateArray = () => {
+            if (isSorting) return;
+            sortingArray = [];
+            visualizerSorting.innerHTML = '';
+            for (let i = 0; i < arraySize; i++) {
+                const value = Math.floor(Math.random() * 90) + 10; // Height from 10% to 100%
+                sortingArray.push(value);
+                const bar = document.createElement('div');
+                bar.style.height = `${value}%`;
+                bar.classList.add('sort-bar', 'bg-blue-500');
+                bar.style.width = `${100 / arraySize}%`;
+                visualizerSorting.appendChild(bar);
+            }
+        };
+
+        // 2. Start Sorting
+        const startSorting = async () => {
+            disableControls(true);
+            const bars = document.getElementsByClassName('sort-bar');
+
+            switch (currentSortingAlgorithm) {
+                case 'bubbleSort':
+                    await bubbleSort(bars);
+                    break;
+                case 'insertionSort':
+                    await insertionSort(bars);
+                    break;
+                case 'selectionSort':
+                    await selectionSort(bars);
+                    break;
+                case 'heapSort':
+                    await heapSort(bars);
+                    break;
+                case 'mergeSort':
+                    await mergeSort(bars, 0, sortingArray.length - 1);
+                    break;
+                case 'quickSort':
+                    await quickSort(bars, 0, sortingArray.length - 1);
+                    break;
+            }
+            
+            // Finish animation
+            for (let i = 0; i < bars.length; i++) {
+                bars[i].classList.remove('bg-blue-500', 'bg-red-500', 'bg-yellow-500', 'bg-purple-500');
+                bars[i].classList.add('bg-green-500');
+                await sleep(5);
+            }
+
+            enableControls(true);
+        };
+
+        // 3. Sorting Algorithms
+        const bubbleSort = async (bars) => {
+            for (let i = 0; i < sortingArray.length - 1; i++) {
+                for (let j = 0; j < sortingArray.length - i - 1; j++) {
+                    // Highlight comparing bars
+                    bars[j].classList.add('bg-red-500');
+                    bars[j+1].classList.add('bg-red-500');
+                    await sleep(sortSpeed);
+
+                    if (sortingArray[j] > sortingArray[j+1]) {
+                        // Swap
+                        [sortingArray[j], sortingArray[j+1]] = [sortingArray[j+1], sortingArray[j]];
+                        bars[j].style.height = `${sortingArray[j]}%`;
+                        bars[j+1].style.height = `${sortingArray[j+1]}%`;
+                        await sleep(sortSpeed);
+                    }
+                    
+                    // Remove highlight
+                    bars[j].classList.remove('bg-red-500');
+                    bars[j+1].classList.remove('bg-red-500');
+                }
+                // Mark sorted bar
+                bars[sortingArray.length - 1 - i].classList.add('bg-green-500');
+            }
+            bars[0].classList.add('bg-green-500');
+        };
+
+        const insertionSort = async (bars) => {
+            for (let i = 1; i < sortingArray.length; i++) {
+                let key = sortingArray[i];
+                let j = i - 1;
+                
+                bars[i].classList.add('bg-red-500'); // Current element to insert
+                await sleep(sortSpeed);
+
+                while (j >= 0 && sortingArray[j] > key) {
+                    bars[j].classList.add('bg-yellow-500'); // Element being shifted
+                    sortingArray[j + 1] = sortingArray[j];
+                    bars[j + 1].style.height = `${sortingArray[j + 1]}%`;
+                    j = j - 1;
+                    await sleep(sortSpeed);
+                    
+                    // Reset shift color
+                    for(let k=i; k>j; k--) bars[k].classList.remove('bg-yellow-500');
+                }
+                sortingArray[j + 1] = key;
+                bars[j + 1].style.height = `${key}%`;
+                
+                bars[i].classList.remove('bg-red-500');
+            }
+            // Mark all as sorted
+            for (let i = 0; i < bars.length; i++) {
+                bars[i].classList.add('bg-green-500');
+            }
+        };
+
+        const selectionSort = async (bars) => {
+            for (let i = 0; i < sortingArray.length - 1; i++) {
+                let minIdx = i;
+                bars[i].classList.add('bg-red-500'); // Current position to fill
+
+                for (let j = i + 1; j < sortingArray.length; j++) {
+                    bars[j].classList.add('bg-yellow-500'); // Current element being checked
+                    await sleep(sortSpeed);
+                    if (sortingArray[j] < sortingArray[minIdx]) {
+                        if (minIdx !== i) bars[minIdx].classList.remove('bg-purple-500'); // Remove old min highlight
+                        minIdx = j;
+                        bars[minIdx].classList.add('bg-purple-500'); // New min highlight
+                    }
+                    bars[j].classList.remove('bg-yellow-500');
+                }
+
+                // Swap
+                [sortingArray[i], sortingArray[minIdx]] = [sortingArray[minIdx], sortingArray[i]];
+                bars[i].style.height = `${sortingArray[i]}%`;
+                bars[minIdx].style.height = `${sortingArray[minIdx]}%`;
+
+                bars[minIdx].classList.remove('bg-purple-500');
+                bars[i].classList.remove('bg-red-500');
+                bars[i].classList.add('bg-green-500'); // Mark as sorted
+            }
+            bars[sortingArray.length - 1].classList.add('bg-green-500');
+        };
+
+        const heapSort = async (bars) => {
+            let n = sortingArray.length;
+
+            // Build max heap
+            for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
+                await heapify(bars, n, i);
+            }
+
+            // One by one extract an element from heap
+            for (let i = n - 1; i > 0; i--) {
+                // Move current root to end
+                bars[0].classList.add('bg-red-500');
+                bars[i].classList.add('bg-red-500');
+                await sleep(sortSpeed);
+
+                [sortingArray[0], sortingArray[i]] = [sortingArray[i], sortingArray[0]];
+                bars[0].style.height = `${sortingArray[0]}%`;
+                bars[i].style.height = `${sortingArray[i]}%`;
+                
+                bars[0].classList.remove('bg-red-500');
+                bars[i].classList.remove('bg-red-500');
+                bars[i].classList.add('bg-green-500'); // Mark as sorted
+
+                // call max heapify on the reduced heap
+                await heapify(bars, i, 0);
+            }
+            bars[0].classList.add('bg-green-500');
+        };
+
+        const heapify = async (bars, n, i) => {
+            let largest = i; // Initialize largest as root
+            let left = 2 * i + 1;
+            let right = 2 * i + 2;
+
+            bars[i].classList.add('bg-red-500'); // Root of subtree
+            if (left < n) bars[left].classList.add('bg-yellow-500');
+            if (right < n) bars[right].classList.add('bg-yellow-500');
+            await sleep(sortSpeed);
+
+            // If left child is larger than root
+            if (left < n && sortingArray[left] > sortingArray[largest]) {
+                largest = left;
+            }
+
+            // If right child is larger than largest so far
+            if (right < n && sortingArray[right] > sortingArray[largest]) {
+                largest = right;
+            }
+
+            // If largest is not root
+            if (largest !== i) {
+                [sortingArray[i], sortingArray[largest]] = [sortingArray[largest], sortingArray[i]];
+                bars[i].style.height = `${sortingArray[i]}%`;
+                bars[largest].style.height = `${sortingArray[largest]}%`;
+                
+                await sleep(sortSpeed);
+                bars[i].classList.remove('bg-red-500');
+                if (left < n) bars[left].classList.remove('bg-yellow-500');
+                if (right < n) bars[right].classList.remove('bg-yellow-500');
+
+                // Recursively heapify the affected sub-tree
+                await heapify(bars, n, largest);
+            } else {
+                 bars[i].classList.remove('bg-red-500');
+                if (left < n) bars[left].classList.remove('bg-yellow-500');
+                if (right < n) bars[right].classList.remove('bg-yellow-500');
+            }
+        };
+
+        const mergeSort = async (bars, left, right) => {
+            if (left >= right) return;
+            
+            const mid = Math.floor((left + right) / 2);
+            
+            await mergeSort(bars, left, mid);
+            await mergeSort(bars, mid + 1, right);
+            await merge(bars, left, mid, right);
+        };
+        
+        const merge = async (bars, left, mid, right) => {
+            let leftArr = sortingArray.slice(left, mid + 1);
+            let rightArr = sortingArray.slice(mid + 1, right + 1);
+            
+            let i = 0, j = 0, k = left;
+            
+            while (i < leftArr.length && j < rightArr.length) {
+                // Highlight comparison
+                if(bars[left + i]) bars[left + i].classList.add('bg-red-500');
+                if(bars[mid + 1 + j]) bars[mid + 1 + j].classList.add('bg-red-500');
+                await sleep(sortSpeed);
+                
+                if (leftArr[i] <= rightArr[j]) {
+                    sortingArray[k] = leftArr[i];
+                    if(bars[k]) bars[k].style.height = `${leftArr[i]}%`;
+                    if(bars[k]) bars[k].classList.add('bg-yellow-500'); // Show merging
+                    i++;
+                } else {
+                    sortingArray[k] = rightArr[j];
+                    if(bars[k]) bars[k].style.height = `${rightArr[j]}%`;
+                    if(bars[k]) bars[k].classList.add('bg-yellow-500'); // Show merging
+                    j++;
+                }
+                
+                await sleep(sortSpeed);
+                // Reset colors
+                for(let bar = left; bar <= right; bar++) {
+                     if(bars[bar]) bars[bar].classList.remove('bg-red-500', 'bg-yellow-500');
+                }
+                k++;
+            }
+            
+            while (i < leftArr.length) {
+                sortingArray[k] = leftArr[i];
+                if(bars[k]) bars[k].style.height = `${leftArr[i]}%`;
+                if(bars[k]) bars[k].classList.add('bg-yellow-500');
+                await sleep(sortSpeed);
+                if(bars[k]) bars[k].classList.remove('bg-yellow-500');
+                i++;
+                k++;
+            }
+            
+            while (j < rightArr.length) {
+                sortingArray[k] = rightArr[j];
+                if(bars[k]) bars[k].style.height = `${rightArr[j]}%`;
+                if(bars[k]) bars[k].classList.add('bg-yellow-500');
+                await sleep(sortSpeed);
+                if(bars[k]) bars[k].classList.remove('bg-yellow-500');
+                j++;
+                k++;
+            }
+            
+            // Mark as sorted in this range
+            for (let barIdx = left; barIdx <= right; barIdx++) {
+                if(bars[barIdx]) bars[barIdx].classList.add('bg-green-500');
+            }
+        };
+
+        const quickSort = async (bars, low, high) => {
+            if (low < high) {
+                let pi = await partition(bars, low, high);
+                await quickSort(bars, low, pi - 1);
+                await quickSort(bars, pi + 1, high);
+            }
+        };
+        
+        const partition = async (bars, low, high) => {
+            let pivot = sortingArray[high];
+            let i = low - 1;
+            
+            if(bars[high]) bars[high].classList.add('bg-yellow-500'); // Pivot color
+            
+            for (let j = low; j < high; j++) {
+                if(bars[j]) bars[j].classList.add('bg-red-500'); // Current element
+                await sleep(sortSpeed);
+                
+                if (sortingArray[j] < pivot) {
+                    i++;
+                    
+                    // Highlight swap elements
+                    if(bars[i]) bars[i].classList.add('bg-purple-500');
+                    if(bars[j]) bars[j].classList.add('bg-purple-500');
+                    await sleep(sortSpeed);
+
+                    [sortingArray[i], sortingArray[j]] = [sortingArray[j], sortingArray[i]];
+                    if(bars[i]) bars[i].style.height = `${sortingArray[i]}%`;
+                    if(bars[j]) bars[j].style.height = `${sortingArray[j]}%`;
+                    
+                    if(bars[i]) bars[i].classList.remove('bg-purple-500');
+                    if(bars[j]) bars[j].classList.remove('bg-purple-500');
+                }
+                if(bars[j]) bars[j].classList.remove('bg-red-500');
+            }
+            
+            // Swap pivot into place
+            [sortingArray[i + 1], sortingArray[high]] = [sortingArray[high], sortingArray[i + 1]];
+            if(bars[i+1]) bars[i + 1].style.height = `${sortingArray[i + 1]}%`;
+            if(bars[high]) bars[high].style.height = `${sortingArray[high]}%`;
+            
+            await sleep(sortSpeed);
+            if(bars[high]) bars[high].classList.remove('bg-yellow-500');
+            
+            // Mark all partitioned elements
+            for(let k = low; k <= high; k++) {
+                if (k !== i + 1 && bars[k]) bars[k].classList.remove('bg-green-500');
+            }
+            if(bars[i+1]) bars[i + 1].classList.add('bg-green-500'); // Correct position
+            
+            return i + 1;
+        };
+
+
+        // --- SEARCHING ALGORITHM LOGIC ---
+
+        const generateSearchingArray = (sorted = false) => {
+            if (isSearching) return;
+            searchingArray = [];
+            visualizerSearching.innerHTML = '';
+            for (let i = 0; i < arraySize; i++) {
+                const value = Math.floor(Math.random() * 90) + 10;
+                searchingArray.push(value);
+            }
+
+            if (sorted) {
+                searchingArray.sort((a, b) => a - b);
+            }
+
+            for (let i = 0; i < arraySize; i++) {
+                const bar = document.createElement('div');
+                bar.style.height = `${searchingArray[i]}%`;
+                bar.classList.add('sort-bar', 'bg-blue-500');
+                bar.style.width = `${100 / arraySize}%`;
+                
+                // Add value label
+                const label = document.createElement('span');
+                label.innerText = searchingArray[i];
+                label.classList.add('text-xs', 'text-white', 'absolute', 'bottom-1', 'left-1/2', '-translate-x-1/2');
+                if (arraySize > 50) label.classList.add('hidden'); // Hide if too crowded
+                bar.style.position = 'relative';
+                bar.appendChild(label);
+
+                visualizerSearching.appendChild(bar);
+            }
+        };
+
+        const startSearching = async () => {
+            const target = parseInt(targetInputSearching.value, 10);
+            if (isNaN(target)) {
+                // Avoid using alert()
+                console.error("Please enter a valid number as target.");
+                return;
+            }
+            
+            isSearching = true;
+            btnStartSearching.disabled = true;
+            btnGenerateArraySearching.disabled = true;
+            btnStartSearching.classList.add('opacity-50', 'cursor-not-allowed');
+            btnGenerateArraySearching.classList.add('opacity-50', 'cursor-not-allowed');
+
+
+            let found = false;
+
+            if (currentSearchingAlgorithm === 'linearSearch') {
+                if (currentView === 'searching') generateSearchingArray(false); // Unsorted
+                await sleep(100); // allow render
+                found = await linearSearch(visualizerSearching.getElementsByClassName('sort-bar'), target);
+            } else if (currentSearchingAlgorithm === 'binarySearch') {
+                if (currentView === 'searching') generateSearchingArray(true); // Sorted
+                await sleep(100); // allow render
+                found = await binarySearch(visualizerSearching.getElementsByClassName('sort-bar'), target);
+            }
+            
+            console.log("Found:", found);
+
+            isSearching = false;
+            btnStartSearching.disabled = false;
+            btnGenerateArraySearching.disabled = false;
+            btnStartSearching.classList.remove('opacity-50', 'cursor-not-allowed');
+            btnGenerateArraySearching.classList.remove('opacity-50', 'cursor-not-allowed');
+
+        };
+
+        const linearSearch = async (bars, target) => {
+            for (let i = 0; i < bars.length; i++) {
+                bars[i].classList.add('bg-red-500'); // Highlight current
+                await sleep(sortSpeed);
+                if (searchingArray[i] === target) {
+                    bars[i].classList.remove('bg-red-500');
+                    bars[i].classList.add('bg-green-500');
+                    return true;
+                }
+                bars[i].classList.remove('bg-red-500');
+                bars[i].classList.add('bg-gray-600'); // Mark as checked
+            }
+            return false;
+        };
+
+        const binarySearch = async (bars, target) => {
+            let low = 0;
+            let high = searchingArray.length - 1;
+
+            while (low <= high) {
+                let mid = Math.floor((low + high) / 2);
+                
+                // Highlight range
+                for(let i=low; i<=high; i++) {
+                    if(bars[i]) bars[i].classList.add('bg-yellow-500');
+                }
+                if(bars[mid]) bars[mid].classList.remove('bg-yellow-500');
+                if(bars[mid]) bars[mid].classList.add('bg-red-500'); // Highlight mid
+                await sleep(sortSpeed * 2);
+
+                if (searchingArray[mid] === target) {
+                    if(bars[mid]) bars[mid].classList.remove('bg-red-500');
+                    if(bars[mid]) bars[mid].classList.add('bg-green-500');
+                    for(let i=low; i<=high; i++) {
+                        if(bars[i]) bars[i].classList.remove('bg-yellow-500');
+                    }
+                    return true;
+                }
+                
+                if (searchingArray[mid] < target) {
+                    low = mid + 1;
+                } else {
+                    high = mid - 1;
+                }
+                
+                // Clear highlights
+                for(let i=0; i<bars.length; i++) {
+                    if(bars[i]) {
+                        bars[i].classList.remove('bg-yellow-500', 'bg-red-500');
+                        if (i < low || i > high) bars[i].classList.add('bg-gray-600'); // Discarded
+                    }
+                }
+            }
+            return false;
+        };
+
+
+        // --- PATHFINDING ALGORITHM LOGIC ---
+        
+        // 1. Node class
+        class Node {
+            constructor(row, col) {
+                this.row = row;
+                this.col = col;
+                this.isStart = row === startNode.row && col === startNode.col;
+                this.isEnd = row === endNode.row && col === endNode.col;
+                this.isWall = false;
+                this.distance = Infinity; // g(n) for A*
+                this.f = Infinity; // f(n) for A*
+                this.h = Infinity; // h(n) for A*
+                this.previousNode = null;
+                this.domElement = document.createElement('div');
+                this.domElement.classList.add('grid-cell');
+                this.domElement.dataset.row = row;
+                this.domElement.dataset.col = col;
+                if (this.isStart) this.domElement.classList.add('start');
+                if (this.isEnd) this.domElement.classList.add('end');
+                
+                // Add event listeners
+                this.domElement.addEventListener('mousedown', () => handleMouseDown(row, col));
+                this.domElement.addEventListener('mouseenter', () => handleMouseEnter(row, col));
+                this.domElement.addEventListener('mouseup', () => handleMouseUp());
+            }
+        }
+        
+        // 2. Create Grid
+        const createGrid = () => {
+            if (isPathfinding) return;
+            grid = [];
+            gridContainer.innerHTML = '';
+            gridContainer.style.gridTemplateColumns = `repeat(${GRID_COLS}, 1fr)`;
+            
+            for (let r = 0; r < GRID_ROWS; r++) {
+                const row = [];
+                for (let c = 0; c < GRID_COLS; c++) {
+                    const node = new Node(r, c);
+                    row.push(node);
+                    gridContainer.appendChild(node.domElement);
+                }
+                grid.push(row);
+            }
+        };
+        
+        // 3. Reset Grid
+        const resetGrid = () => {
+            if (isPathfinding) return;
+            for(let r=0; r < GRID_ROWS; r++) {
+                for (let c=0; c < GRID_COLS; c++) {
+                    const node = grid[r][c];
+                    node.isWall = false;
+                    node.distance = Infinity;
+                    node.f = Infinity;
+                    node.h = Infinity;
+                    node.previousNode = null;
+                    node.domElement.classList.remove('wall', 'visited', 'path');
+                    if (r === startNode.row && c === startNode.col) {
+                         node.isStart = true;
+                         node.domElement.classList.add('start');
+                    } else {
+                        node.isStart = false;
+                    }
+                    
+                    if (r === endNode.row && c === endNode.col) {
+                        node.isEnd = true;
+                        node.domElement.classList.add('end');
+                    } else {
+                        node.isEnd = false;
+                    }
+                }
+            }
+        };
+        
+        const clearSearch = () => {
+             for(let r=0; r < GRID_ROWS; r++) {
+                for (let c=0; c < GRID_COLS; c++) {
+                    const node = grid[r][c];
+                    node.distance = Infinity;
+                    node.f = Infinity;
+                    node.h = Infinity;
+                    node.previousNode = null;
+                    node.isVisited = false; // Reset visited state
+                    if (!node.isStart && !node.isEnd && !node.isWall) {
+                         node.domElement.classList.remove('visited', 'path');
+                    }
+                }
+            }
+        }
+
+        // 4. Mouse Handlers for Walls
+        const handleMouseDown = (row, col) => {
+            if (isPathfinding) return;
+            const node = grid[row][col];
+            if (node.isStart) {
+                isMovingStart = true;
+            } else if (node.isEnd) {
+                isMovingEnd = true;
+            } else {
+                isDrawingWalls = true;
+                node.isWall = !node.isWall;
+                node.domElement.classList.toggle('wall', node.isWall);
+            }
+        };
+        
+        const handleMouseEnter = (row, col) => {
+            if (isPathfinding) return;
+            const node = grid[row][col];
+            if (isDrawingWalls) {
+                if (!node.isStart && !node.isEnd) {
+                    node.isWall = true;
+                    node.domElement.classList.add('wall');
+                }
+            } else if (isMovingStart) {
+                if (!node.isWall && !node.isEnd) {
+                    grid[startNode.row][startNode.col].isStart = false;
+                    grid[startNode.row][startNode.col].domElement.classList.remove('start');
+                    startNode = { row, col };
+                    node.isStart = true;
+                    node.domElement.classList.add('start');
+                }
+            } else if (isMovingEnd) {
+                 if (!node.isWall && !node.isStart) {
+                    grid[endNode.row][endNode.col].isEnd = false;
+                    grid[endNode.row][endNode.col].domElement.classList.remove('end');
+                    endNode = { row, col };
+                    node.isEnd = true;
+                    node.domElement.classList.add('end');
+                }
+            }
+        };
+        
+        const handleMouseUp = () => {
+            isDrawingWalls = false;
+            isMovingStart = false;
+            isMovingEnd = false;
+        };
+        
+        // 5. Start Pathfinding
+        const startPathfinding = async () => {
+            disableControls(false);
+            clearSearch();
+            
+            const start = grid[startNode.row][startNode.col];
+            const end = grid[endNode.row][endNode.col];
+            
+            if (currentPathfindingAlgorithm === 'dijkstra') {
+                await dijkstra(start, end);
+            } else if (currentPathfindingAlgorithm === 'aStar') {
+                await aStar(start, end);
+            } else if (currentPathfindingAlgorithm === 'bfs') {
+                await bfs(start, end);
+            } else if (currentPathfindingAlgorithm === 'dfs') {
+                await dfs(start, end);
+            }
+            
+            enableControls(false);
+        };
+        
+        // 6. Dijkstra's Algorithm
+        const dijkstra = async (start, end) => {
+            const unvisitedNodes = getAllNodes();
+            start.distance = 0;
+            
+            while(!!unvisitedNodes.length) {
+                sortNodesByDistance(unvisitedNodes);
+                const closestNode = unvisitedNodes.shift();
+                
+                if (closestNode.isWall) continue;
+                
+                // If trapped
+                if (closestNode.distance === Infinity) {
+                    console.log("No path found");
+                    return;
+                }
+                
+                closestNode.isVisited = true;
+                if (!closestNode.isStart && !closestNode.isEnd) {
+                    closestNode.domElement.classList.add('visited');
+                }
+                
+                await sleep(10); // Speed of visualization
+                
+                if (closestNode === end) {
+                    await animateShortestPath(end);
+                    return;
+                }
+                
+                updateUnvisitedNeighbors(closestNode);
+            }
+        };
+
+        // A* Search
+        const aStar = async (start, end) => {
+            const openSet = [start];
+            start.distance = 0;
+            start.h = heuristic(start, end);
+            start.f = start.h;
+
+            while (!!openSet.length) {
+                // Sort by f-score
+                openSet.sort((a, b) => a.f - b.f);
+                const currentNode = openSet.shift();
+
+                if (currentNode.isWall) continue;
+                
+                if (currentNode.isVisited) continue; // Already processed
+                currentNode.isVisited = true;
+                if (!currentNode.isStart && !currentNode.isEnd) {
+                    currentNode.domElement.classList.add('visited');
+                }
+                
+                await sleep(10);
+
+                if (currentNode === end) {
+                    await animateShortestPath(end);
+                    return;
+                }
+
+                const neighbors = getNeighbors(currentNode, true); // Get all neighbors (visited or not)
+                for (const neighbor of neighbors) {
+                    if (neighbor.isWall) continue;
+
+                    const tentativeGScore = currentNode.distance + 1; // All weights are 1
+                    
+                    if (tentativeGScore < neighbor.distance) {
+                        neighbor.previousNode = currentNode;
+                        neighbor.distance = tentativeGScore;
+                        neighbor.h = heuristic(neighbor, end);
+                        neighbor.f = neighbor.distance + neighbor.h;
+                        
+                        if (!openSet.some(node => node.row === neighbor.row && node.col === neighbor.col)) {
+                            openSet.push(neighbor);
+                        }
+                    }
+                }
+            }
+            console.log("No path found (A*)");
+        };
+
+        const heuristic = (nodeA, nodeB) => {
+            // Manhattan distance
+            const dRow = Math.abs(nodeA.row - nodeB.row);
+            const dCol = Math.abs(nodeA.col - nodeB.col);
+            return dRow + dCol;
+        };
+        
+        // Breadth-First Search (BFS)
+        const bfs = async (start, end) => {
+            const queue = [start];
+            start.isVisited = true;
+            
+            while (!!queue.length) {
+                const currentNode = queue.shift();
+                
+                if (currentNode.isWall) continue;
+                
+                if (!currentNode.isStart && !currentNode.isEnd) {
+                    currentNode.domElement.classList.add('visited');
+                }
+                await sleep(10);
+                
+                if (currentNode === end) {
+                    await animateShortestPath(end);
+                    return;
+                }
+                
+                const neighbors = getNeighbors(currentNode, false); // Get unvisited neighbors
+                for (const neighbor of neighbors) {
+                    if (!neighbor.isVisited && !neighbor.isWall) {
+                        neighbor.isVisited = true;
+                        neighbor.previousNode = currentNode;
+                        queue.push(neighbor);
+                    }
+                }
+            }
+            console.log("No path found (BFS)");
+        };
+
+        // Depth-First Search (DFS)
+        const dfs = async (start, end) => {
+            const stack = [start];
+            
+            while (!!stack.length) {
+                const currentNode = stack.pop();
+                
+                if (currentNode.isWall) continue;
+                
+                if (currentNode.isVisited) continue;
+                currentNode.isVisited = true;
+
+                if (!currentNode.isStart && !currentNode.isEnd) {
+                    currentNode.domElement.classList.add('visited');
+                }
+                await sleep(10);
+
+                if (currentNode === end) {
+                    // Note: DFS path is not guaranteed to be shortest
+                    await animateShortestPath(end);
+                    return;
+                }
+                
+                const neighbors = getNeighbors(currentNode, false); // Get unvisited neighbors
+                for (const neighbor of neighbors) {
+                    if (!neighbor.isVisited && !neighbor.isWall) {
+                        neighbor.previousNode = currentNode;
+                        stack.push(neighbor);
+                    }
+                }
+            }
+            console.log("No path found (DFS)");
+        };
+        
+        const sortNodesByDistance = (nodes) => {
+            nodes.sort((a, b) => a.distance - b.distance);
+        };
+        
+        const getAllNodes = () => {
+            const nodes = [];
+            for (const row of grid) {
+                for (const node of row) {
+                    nodes.push(node);
+                }
+            }
+            return nodes;
+        };
+        
+        const updateUnvisitedNeighbors = (node) => {
+            const neighbors = getNeighbors(node, false); // Get unvisited neighbors
+            for (const neighbor of neighbors) {
+                if (!neighbor.isWall) {
+                    neighbor.distance = node.distance + 1;
+                    neighbor.previousNode = node;
+                }
+            }
+        };
+        
+        const getNeighbors = (node, includeVisited = false) => {
+            const neighbors = [];
+            const { row, col } = node;
+            if (row > 0) neighbors.push(grid[row - 1][col]);
+            if (row < GRID_ROWS - 1) neighbors.push(grid[row + 1][col]);
+            if (col > 0) neighbors.push(grid[row][col - 1]);
+            if (col < GRID_COLS - 1) neighbors.push(grid[row][col + 1]);
+            
+            if (includeVisited) {
+                return neighbors;
+            }
+            return neighbors.filter(n => !n.isVisited);
+        };
+        
+        const animateShortestPath = async (endNode) => {
+            let currentNode = endNode;
+            const path = [];
+            while(currentNode !== null) {
+                path.push(currentNode);
+                currentNode = currentNode.previousNode;
+            }
+            path.reverse();
+            
+            for (const node of path) {
+                if (!node.isStart && !node.isEnd) {
+                    node.domElement.classList.add('path');
+                    await sleep(25);
+                }
+            }
+        };
+
+
+        // --- DYNAMIC PROGRAMMING LOGIC ---
+        
+        const startDP = async () => {
+            isDPRunning = true;
+            btnStartDp.disabled = true;
+            btnStartDp.classList.add('opacity-50', 'cursor-not-allowed');
+            dpOutputContainer.innerHTML = '<p class="text-yellow-400">Working...</p>';
+
+            switch(currentDPAlgorithm) {
+                case 'fibonacci':
+                    await visualizeFibonacci();
+                    break;
+                case 'knapsack':
+                    await visualizeKnapsack();
+                    break;
+                case 'lcs':
+                    await visualizeLCS();
+                    break;
+            }
+
+            isDPRunning = false;
+            btnStartDp.disabled = false;
+            btnStartDp.classList.remove('opacity-50', 'cursor-not-allowed');
+        };
+        
+        const visualizeFibonacci = async () => {
+            const n = parseInt(document.getElementById('dp-fib-n').value, 10);
+            if (isNaN(n) || n < 0) {
+                dpOutputContainer.innerHTML = '<p class="text-red-500">Invalid input for n.</p>';
+                return;
+            }
+            
+            let memo = new Array(n + 1).fill(null);
+            dpOutputContainer.innerHTML = `<h3 class="text-lg font-bold mb-2">Memoization Table (n=${n})</h3>`;
+            const table = document.createElement('div');
+            table.classList.add('flex', 'flex-wrap', 'gap-2');
+            dpOutputContainer.appendChild(table);
+
+            const fib = async (num) => {
+                if (num <= 1) return num;
+                
+                let cell = table.querySelector(`[data-index='${num}']`);
+                if (!cell) {
+                    cell = document.createElement('div');
+                    cell.dataset.index = num;
+                    cell.classList.add('p-2', 'bg-gray-700', 'rounded-lg', 'font-mono', 'text-sm');
+                    cell.innerHTML = `fib(${num}) = ?`;
+                    table.appendChild(cell);
+                    await sleep(200);
+                }
+
+                if (memo[num]) {
+                     cell.classList.add('bg-yellow-500');
+                     await sleep(200);
+                     cell.classList.remove('bg-yellow-500');
+                    return memo[num];
+                }
+                
+                cell.classList.add('bg-blue-500'); // Mark as computing
+                await sleep(200);
+
+
+                let res = (await fib(num - 1)) + (await fib(num - 2));
+                memo[num] = res;
+                
+                cell.innerHTML = `fib(${num}) = ${res}`;
+                cell.classList.remove('bg-blue-500');
+                cell.classList.add('bg-green-600', 'text-white');
+                await sleep(200);
+                return res;
+            };
+
+            const result = await fib(n);
+            dpOutputContainer.innerHTML += `<h3 class="text-xl font-bold mt-4">Result: fib(${n}) = ${result}</h3>`;
+        };
+        
+        const visualizeKnapsack = async () => {
+            // Placeholder - This visualization is complex
+            dpOutputContainer.innerHTML = `
+                <p class="text-gray-400">Knapsack visualization is complex and coming soon!</p>
+                <p class="text-gray-500 text-sm">This would involve dynamically creating and filling a 2D grid (N x W) to show how the <code class="font-mono bg-gray-700 px-1 rounded">dp[i][w]</code> values are computed step-by-step.</p>
+            `;
+            console.log("Knapsack logic to be implemented");
+            await sleep(500); // Simulate work
+        };
+        
+        const visualizeLCS = async () => {
+            // Placeholder - This visualization is complex
+            dpOutputContainer.innerHTML = `
+                <p class="text-gray-400">LCS visualization is complex and coming soon!</p>
+                <p class="text-gray-500 text-sm">This would involve creating a 2D grid (M x N) for the two strings and animating the cell-by-cell comparison to fill the <code class="font-mono bg-gray-700 px-1 rounded">dp[i][j]</code> table.</p>
+            `;
+            console.log("LCS logic to be implemented");
+            await sleep(500); // Simulate work
+        };
+
+
+        // --- EVENT LISTENERS ---
+        window.addEventListener('DOMContentLoaded', () => {
+            // Tabs
+            tabSorting.addEventListener('click', () => switchView('sorting'));
+            tabSearching.addEventListener('click', () => switchView('searching'));
+            tabPathfinding.addEventListener('click', () => switchView('pathfinding'));
+            tabDp.addEventListener('click', () => switchView('dp'));
+            
+            // Sorting Controls
+            algoSelectSorting.addEventListener('change', (e) => {
+                currentSortingAlgorithm = e.target.value;
+                updateComplexityInfo();
+            });
+            speedSliderSorting.addEventListener('input', (e) => {
+                // Slower speed means longer sleep, so we invert the slider value
+                sortSpeed = 510 - e.target.value;
+            });
+             sizeSliderSorting.addEventListener('input', (e) => {
+                arraySize = e.target.value;
+                if(currentView === 'sorting') generateArray();
+                if(currentView === 'searching') {
+                    if (currentSearchingAlgorithm === 'binarySearch') {
+                        generateSearchingArray(true);
+                    } else {
+                        generateSearchingArray(false);
+                    }
+                }
+            });
+            btnGenerateArray.addEventListener('click', generateArray);
+            btnStartSorting.addEventListener('click', startSorting);
+
+            // Searching Controls
+            algoSelectSearching.addEventListener('change', (e) => {
+                currentSearchingAlgorithm = e.target.value;
+                if (e.target.value === 'binarySearch') {
+                    generateSearchingArray(true);
+                } else {
+                    generateSearchingArray(false);
+                }
+                updateComplexityInfo();
+            });
+            btnGenerateArraySearching.addEventListener('click', () => {
+                if (currentSearchingAlgorithm === 'binarySearch') {
+                    generateSearchingArray(true);
+                } else {
+                    generateSearchingArray(false);
+                }
+            });
+            btnStartSearching.addEventListener('click', startSearching);
+            
+            // Pathfinding Controls
+            algoSelectPathfinding.addEventListener('change', (e) => {
+                currentPathfindingAlgorithm = e.target.value;
+                updateComplexityInfo();
+            });
+            btnResetGrid.addEventListener('click', resetGrid); // Changed to resetGrid to keep walls
+            btnStartPathfinding.addEventListener('click', startPathfinding);
+
+            // DP Controls
+            algoSelectDp.addEventListener('change', updateDPInputs);
+            btnStartDp.addEventListener('click', startDP);
+            
+            // Global mouse up for pathfinding
+            document.body.addEventListener('mouseup', handleMouseUp);
+            
+            // Initial setup
+            switchView('sorting'); // Start on sorting view
+        });
+
+    </script>
+</body>
+</html>
+
