@@ -22,6 +22,21 @@
             transition: height 0.3s ease, background-color 0.3s ease;
             margin: 0 1px;
             border-radius: 4px 4px 0 0;
+            position: relative; /* Added for label positioning */
+        }
+        
+        .sort-bar-label {
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: white;
+            background-color: rgba(0,0,0,0.3);
+            padding: 0 2px;
+            border-radius: 2px;
+            white-space: nowrap;
         }
 
         /* Pathfinding grid cell styles */
@@ -109,7 +124,7 @@
 
     <!-- Header -->
     <header class="bg-gray-800 shadow-lg rounded-b-lg sticky top-0 z-10">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+        <div class="container mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
             <h1 class="text-2xl md:text-3xl font-bold text-white">Algorithm Playground</h1>
             <!-- Tabs -->
             <div class="flex flex-wrap bg-gray-700 rounded-lg p-1">
@@ -149,12 +164,20 @@
                         <input id="speed-slider-sorting" type="range" min="10" max="500" value="100" class="w-full h-2 rounded-lg appearance-none cursor-pointer">
                     </div>
                      <div class="mb-4">
-                        <label for="size-slider-sorting" class="block text-sm font-medium text-gray-400 mb-1">Array Size</label>
+                        <label for="size-slider-sorting" class="block text-sm font-medium text-gray-400 mb-1">Array Size (Random)</label>
                         <input id="size-slider-sorting" type="range" min="10" max="100" value="50" class="w-full h-2 rounded-lg appearance-none cursor-pointer">
                     </div>
+                    <div class="mb-4">
+                        <label for="custom-array-sorting" class="block text-sm font-medium text-gray-400 mb-1">Custom Array (e.g., 50,10,88)</label>
+                        <textarea id="custom-array-sorting" rows="2" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter comma-separated numbers"></textarea>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-2 mb-2">
+                        <button id="btn-generate-array" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">Use Random Array</button>
+                        <button id="btn-use-custom-array-sorting" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">Use Custom Array</button>
+                    </div>
                     <div class="flex flex-col sm:flex-row gap-2">
-                        <button id="btn-generate-array" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">Generate New Array</button>
                         <button id="btn-start-sorting" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">Start Sort</button>
+                        <button id="btn-stop-sorting" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 opacity-50 cursor-not-allowed" disabled>Stop</button>
                     </div>
                 </div>
 
@@ -168,12 +191,20 @@
                         </select>
                     </div>
                     <div class="mb-4">
-                        <label for="target-input-searching" class="block text-sm font-medium text-gray-400 mb-1">Target Value (10-100)</label>
-                        <input id="target-input-searching" type="number" min="10" max="100" value="42" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2">
+                        <label for="target-input-searching" class="block text-sm font-medium text-gray-400 mb-1">Target Value</label>
+                        <input id="target-input-searching" type="number" min="0" value="42" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2">
+                    </div>
+                    <div class="mb-4">
+                        <label for="custom-array-searching" class="block text-sm font-medium text-gray-400 mb-1">Custom Array (e.g., 50,10,88)</label>
+                        <textarea id="custom-array-searching" rows="2" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter comma-separated numbers"></textarea>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-2 mb-2">
+                        <button id="btn-generate-array-searching" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">Use Random Array</button>
+                        <button id="btn-use-custom-array-searching" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">Use Custom Array</button>
                     </div>
                     <div class="flex flex-col sm:flex-row gap-2">
-                        <button id="btn-generate-array-searching" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">New Array</button>
                         <button id="btn-start-searching" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">Start Search</button>
+                        <button id="btn-stop-searching" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 opacity-50 cursor-not-allowed" disabled>Stop</button>
                     </div>
                     <p class="text-xs text-gray-500 mt-2">Note: Binary Search will automatically sort the array first.</p>
                 </div>
@@ -193,9 +224,13 @@
                         Click/Drag to add walls. <br>
                         Drag Start (Green) & End (Red) nodes.
                     </p>
-                    <div class="flex flex-col sm:flex-row gap-2">
+                    <div class="flex flex-col sm:flex-row gap-2 mb-2">
                         <button id="btn-reset-grid" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">Reset Grid</button>
+                        <button id="btn-clear-path" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">Clear Path</button>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-2">
                         <button id="btn-start-pathfinding" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">Start Search</button>
+                        <button id="btn-stop-pathfinding" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 opacity-50 cursor-not-allowed" disabled>Stop</button>
                     </div>
                 </div>
 
@@ -213,7 +248,10 @@
                     <div id="dp-inputs-container">
                         <!-- JS will populate this -->
                     </div>
-                    <button id="btn-start-dp" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 mt-4">Start</button>
+                    <div class="flex flex-col sm:flex-row gap-2 mt-4">
+                        <button id="btn-start-dp" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">Start</button>
+                        <button id="btn-stop-dp" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 opacity-50 cursor-not-allowed" disabled>Stop</button>
+                    </div>
                 </div>
             </div>
 
@@ -248,7 +286,7 @@
 
             <!-- DP Visualizer (Hidden by default) -->
             <div id="visualizer-dp" class="hidden w-full h-full flex-col items-center justify-center p-4">
-                <p class="text-gray-400 text-lg">Dynamic Programming Visualizer</p>
+                <p class="text-gray-400 text-lg">Dynamic Programming Visualizer</D>
                 <p class="text-gray-500">Visualization for this algorithm is coming soon!</p>
                 <!-- DP Table/Result will go here -->
                 <div id="dp-output-container" class="w-full h-full mt-4 overflow-auto"></div>
@@ -269,8 +307,15 @@
         let arraySize = 50;
         let sortingArray = [];
         let searchingArray = []; // For the searching tab
+        
+        // Global stop flag
+        let forceStop = false;
+        
+        // State flags
         let isSorting = false;
         let isSearching = false;
+        let isPathfinding = false;
+        let isDPRunning = false;
 
         const GRID_ROWS = 25;
         const GRID_COLS = 25;
@@ -280,8 +325,6 @@
         let isDrawingWalls = false;
         let isMovingStart = false;
         let isMovingEnd = false;
-        let isPathfinding = false;
-        let isDPRunning = false;
 
         // --- COMPLEXITY DATA ---
         const complexityData = {
@@ -508,69 +551,175 @@
         const visualizerDp = document.getElementById('visualizer-dp');
         const gridContainer = document.getElementById('grid-container');
 
+        // Sorting controls
         const algoSelectSorting = document.getElementById('algo-select-sorting');
         const speedSliderSorting = document.getElementById('speed-slider-sorting');
         const sizeSliderSorting = document.getElementById('size-slider-sorting');
+        const customArraySorting = document.getElementById('custom-array-sorting');
         const btnGenerateArray = document.getElementById('btn-generate-array');
+        const btnUseCustomArraySorting = document.getElementById('btn-use-custom-array-sorting');
         const btnStartSorting = document.getElementById('btn-start-sorting');
+        const btnStopSorting = document.getElementById('btn-stop-sorting');
 
+        // Searching controls
         const algoSelectSearching = document.getElementById('algo-select-searching');
         const targetInputSearching = document.getElementById('target-input-searching');
+        const customArraySearching = document.getElementById('custom-array-searching');
         const btnGenerateArraySearching = document.getElementById('btn-generate-array-searching');
+        const btnUseCustomArraySearching = document.getElementById('btn-use-custom-array-searching');
         const btnStartSearching = document.getElementById('btn-start-searching');
+        const btnStopSearching = document.getElementById('btn-stop-searching');
 
+        // Pathfinding controls
         const algoSelectPathfinding = document.getElementById('algo-select-pathfinding');
         const btnResetGrid = document.getElementById('btn-reset-grid');
+        const btnClearPath = document.getElementById('btn-clear-path');
         const btnStartPathfinding = document.getElementById('btn-start-pathfinding');
+        const btnStopPathfinding = document.getElementById('btn-stop-pathfinding');
 
+        // DP controls
         const algoSelectDp = document.getElementById('algo-select-dp');
         const dpInputsContainer = document.getElementById('dp-inputs-container');
         const dpOutputContainer = document.getElementById('dp-output-container');
         const btnStartDp = document.getElementById('btn-start-dp');
+        const btnStopDp = document.getElementById('btn-stop-dp');
 
         const complexityInfo = document.getElementById('complexity-info');
 
         // --- UTILITY FUNCTIONS ---
         const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-        const disableControls = (isSortingView) => {
-            if (isSortingView) {
+        
+        const stopAlgorithm = () => {
+            forceStop = true;
+            // Re-enable controls immediately
+            if (isSorting) enableControls('sorting');
+            if (isSearching) enableControls('searching');
+            if (isPathfinding) enableControls('pathfinding');
+            if (isDPRunning) enableControls('dp');
+        };
+
+        const disableControls = (view) => {
+            forceStop = false; // Reset stop flag on start
+            
+            if (view === 'sorting') {
                 isSorting = true;
                 btnStartSorting.disabled = true;
                 btnGenerateArray.disabled = true;
+                btnUseCustomArraySorting.disabled = true;
                 algoSelectSorting.disabled = true;
                 sizeSliderSorting.disabled = true;
+                customArraySorting.disabled = true;
                 btnStartSorting.classList.add('opacity-50', 'cursor-not-allowed');
                 btnGenerateArray.classList.add('opacity-50', 'cursor-not-allowed');
-            } else {
+                btnUseCustomArraySorting.classList.add('opacity-50', 'cursor-not-allowed');
+                
+                // Enable Stop button
+                btnStopSorting.disabled = false;
+                btnStopSorting.classList.remove('opacity-50', 'cursor-not-allowed');
+
+            } else if (view === 'searching') {
+                isSearching = true;
+                btnStartSearching.disabled = true;
+                btnGenerateArraySearching.disabled = true;
+                btnUseCustomArraySearching.disabled = true;
+                algoSelectSearching.disabled = true;
+                targetInputSearching.disabled = true;
+                customArraySearching.disabled = true;
+                btnStartSearching.classList.add('opacity-50', 'cursor-not-allowed');
+                btnGenerateArraySearching.classList.add('opacity-50', 'cursor-not-allowed');
+                btnUseCustomArraySearching.classList.add('opacity-50', 'cursor-not-allowed');
+
+                btnStopSearching.disabled = false;
+                btnStopSearching.classList.remove('opacity-50', 'cursor-not-allowed');
+
+            } else if (view === 'pathfinding') {
                 isPathfinding = true;
                 btnStartPathfinding.disabled = true;
                 btnResetGrid.disabled = true;
+                btnClearPath.disabled = true;
                 algoSelectPathfinding.disabled = true;
                 btnStartPathfinding.classList.add('opacity-50', 'cursor-not-allowed');
                 btnResetGrid.classList.add('opacity-50', 'cursor-not-allowed');
+                btnClearPath.classList.add('opacity-50', 'cursor-not-allowed');
+
+                btnStopPathfinding.disabled = false;
+                btnStopPathfinding.classList.remove('opacity-50', 'cursor-not-allowed');
+                
+            } else if (view === 'dp') {
+                isDPRunning = true;
+                btnStartDp.disabled = true;
+                algoSelectDp.disabled = true;
+                btnStartDp.classList.add('opacity-50', 'cursor-not-allowed');
+                // Disable all inputs
+                dpInputsContainer.querySelectorAll('input, textarea').forEach(el => el.disabled = true);
+                
+                btnStopDp.disabled = false;
+                btnStopDp.classList.remove('opacity-50', 'cursor-not-allowed');
             }
         };
-        const enableControls = (isSortingView) => {
-             if (isSortingView) {
+
+        const enableControls = (view) => {
+             if (view === 'sorting') {
                 isSorting = false;
                 btnStartSorting.disabled = false;
                 btnGenerateArray.disabled = false;
+                btnUseCustomArraySorting.disabled = false;
                 algoSelectSorting.disabled = false;
                 sizeSliderSorting.disabled = false;
+                customArraySorting.disabled = false;
                 btnStartSorting.classList.remove('opacity-50', 'cursor-not-allowed');
                 btnGenerateArray.classList.remove('opacity-50', 'cursor-not-allowed');
-            } else {
+                btnUseCustomArraySorting.classList.remove('opacity-50', 'cursor-not-allowed');
+
+                btnStopSorting.disabled = true;
+                btnStopSorting.classList.add('opacity-50', 'cursor-not-allowed');
+
+            } else if (view === 'searching') {
+                isSearching = false;
+                btnStartSearching.disabled = false;
+                btnGenerateArraySearching.disabled = false;
+                btnUseCustomArraySearching.disabled = false;
+                algoSelectSearching.disabled = false;
+                targetInputSearching.disabled = false;
+                customArraySearching.disabled = false;
+                btnStartSearching.classList.remove('opacity-50', 'cursor-not-allowed');
+                btnGenerateArraySearching.classList.remove('opacity-50', 'cursor-not-allowed');
+                btnUseCustomArraySearching.classList.remove('opacity-50', 'cursor-not-allowed');
+
+                btnStopSearching.disabled = true;
+                btnStopSearching.classList.add('opacity-50', 'cursor-not-allowed');
+                
+            } else if (view === 'pathfinding') {
                 isPathfinding = false;
                 btnStartPathfinding.disabled = false;
                 btnResetGrid.disabled = false;
+                btnClearPath.disabled = false;
                 algoSelectPathfinding.disabled = false;
                 btnStartPathfinding.classList.remove('opacity-50', 'cursor-not-allowed');
                 btnResetGrid.classList.remove('opacity-50', 'cursor-not-allowed');
+                btnClearPath.classList.remove('opacity-50', 'cursor-not-allowed');
+                
+                btnStopPathfinding.disabled = true;
+                btnStopPathfinding.classList.add('opacity-50', 'cursor-not-allowed');
+                
+            } else if (view === 'dp') {
+                isDPRunning = false;
+                btnStartDp.disabled = false;
+                algoSelectDp.disabled = false;
+                btnStartDp.classList.remove('opacity-50', 'cursor-not-allowed');
+                dpInputsContainer.querySelectorAll('input, textarea').forEach(el => el.disabled = false);
+
+                btnStopDp.disabled = true;
+                btnStopDp.classList.add('opacity-50', 'cursor-not-allowed');
             }
         };
 
         // --- VIEW SWITCHING ---
         const switchView = (view) => {
+            if (isSorting || isSearching || isPathfinding || isDPRunning) {
+                stopAlgorithm();
+            }
+            
             currentView = view;
             
             // Reset all tabs
@@ -584,20 +733,23 @@
             [visualizerSorting, visualizerSearching, visualizerPathfinding, visualizerDp].forEach(v => v.classList.add('hidden'));
             visualizerSorting.classList.remove('flex'); // Special case for flex
             visualizerSearching.classList.remove('flex'); // Special case for flex
+            visualizerDp.classList.remove('flex'); // Special case for flex
 
             if (view === 'sorting') {
                 tabSorting.classList.add('bg-blue-600', 'text-white');
                 controlsSorting.classList.remove('hidden');
                 visualizerSorting.classList.remove('hidden');
                 visualizerSorting.classList.add('flex');
-                if (sortingArray.length === 0) generateArray();
+                if (sortingArray.length === 0) generateArray(false); // Generate random array
+                else drawArray(sortingArray, visualizerSorting); // Redraw existing
 
             } else if (view === 'searching') {
                 tabSearching.classList.add('bg-blue-600', 'text-white');
                 controlsSearching.classList.remove('hidden');
                 visualizerSearching.classList.remove('hidden');
                 visualizerSearching.classList.add('flex');
-                if (searchingArray.length === 0) generateSearchingArray();
+                if (searchingArray.length === 0) generateArray(true); // Generate random array for searching
+                else drawArray(searchingArray, visualizerSearching, true); // Redraw existing
 
             } else if (view === 'pathfinding') {
                 tabPathfinding.classList.add('bg-blue-600', 'text-white');
@@ -620,6 +772,7 @@
         const updateDPInputs = () => {
             currentDPAlgorithm = algoSelectDp.value;
             dpInputsContainer.innerHTML = ''; // Clear old inputs
+            dpOutputContainer.innerHTML = ''; // Clear old output
             
             const baseInputClass = "w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 mt-1";
             const baseLabelClass = "block text-sm font-medium text-gray-400";
@@ -705,28 +858,102 @@
             `;
         };
 
-        // --- SORTING ALGORITHM LOGIC ---
+        // --- SORTING/SEARCHING ARRAY LOGIC ---
         
-        // 1. Generate Array
-        const generateArray = () => {
-            if (isSorting) return;
-            sortingArray = [];
-            visualizerSorting.innerHTML = '';
-            for (let i = 0; i < arraySize; i++) {
-                const value = Math.floor(Math.random() * 90) + 10; // Height from 10% to 100%
-                sortingArray.push(value);
+        // 1. Draw Array
+        const drawArray = (array, visualizer, showLabels = false) => {
+            visualizer.innerHTML = '';
+            const maxVal = Math.max(...array);
+            const showText = (array.length <= 50) || showLabels; // Always show for searching, or if not crowded
+
+            for (let i = 0; i < array.length; i++) {
+                const value = array[i];
+                const percentHeight = (value / maxVal) * 90 + 10; // Height from 10% to 100%
                 const bar = document.createElement('div');
-                bar.style.height = `${value}%`;
+                bar.style.height = `${percentHeight}%`;
                 bar.classList.add('sort-bar', 'bg-blue-500');
-                bar.style.width = `${100 / arraySize}%`;
-                visualizerSorting.appendChild(bar);
+                bar.style.width = `${100 / array.length}%`;
+                
+                if (showText) {
+                    const label = document.createElement('span');
+                    label.innerText = value;
+                    label.classList.add('sort-bar-label');
+                    if (array.length > 30) label.style.fontSize = '8px'; // Smaller text if still crowded
+                    bar.appendChild(label);
+                }
+                
+                visualizer.appendChild(bar);
             }
         };
 
-        // 2. Start Sorting
+        // 2. Generate Random Array
+        const generateArray = (isSearchTab) => {
+            if (isSorting || isSearching) return;
+            
+            const size = isSearchTab ? 30 : arraySize; // Use fixed size for searching for clarity
+            let newArray = [];
+            for (let i = 0; i < size; i++) {
+                const value = Math.floor(Math.random() * 90) + 10;
+                newArray.push(value);
+            }
+            
+            if (isSearchTab) {
+                if (currentSearchingAlgorithm === 'binarySearch') {
+                    newArray.sort((a,b) => a-b);
+                }
+                searchingArray = [...newArray];
+                drawArray(searchingArray, visualizerSearching, true);
+            } else {
+                sortingArray = [...newArray];
+                drawArray(sortingArray, visualizerSorting);
+            }
+        };
+
+        // 3. Parse Custom Array
+        const parseCustomArray = (input) => {
+            return input
+                .split(',')
+                .map(item => parseInt(item.trim(), 10))
+                .filter(num => !isNaN(num) && num > 0);
+        };
+        
+        // 4. Use Custom Array
+        const useCustomArray = (isSearchTab) => {
+            if (isSorting || isSearching) return;
+            
+            const input = isSearchTab ? customArraySearching.value : customArraySorting.value;
+            let newArray = parseCustomArray(input);
+            
+            if (newArray.length === 0) {
+                // simple feedback, no alert()
+                console.error("Invalid custom array. Please enter comma-separated positive numbers.");
+                if (isSearchTab) customArraySearching.value = "ERROR: Invalid Input";
+                else customArraySorting.value = "ERROR: Invalid Input";
+                return;
+            }
+            
+            if (newArray.length > 100) {
+                newArray = newArray.slice(0, 100); // Cap size
+            }
+            
+            if (isSearchTab) {
+                if (currentSearchingAlgorithm === 'binarySearch') {
+                    newArray.sort((a,b) => a-b);
+                }
+                searchingArray = [...newArray];
+                drawArray(searchingArray, visualizerSearching, true);
+            } else {
+                sortingArray = [...newArray];
+                drawArray(sortingArray, visualizerSorting, true); // Show labels for custom sort
+            }
+        };
+
+        // 5. Start Sorting
         const startSorting = async () => {
-            disableControls(true);
-            const bars = document.getElementsByClassName('sort-bar');
+            if (sortingArray.length === 0) generateArray(false);
+            
+            disableControls('sorting');
+            const bars = visualizerSorting.getElementsByClassName('sort-bar');
 
             switch (currentSortingAlgorithm) {
                 case 'bubbleSort':
@@ -749,80 +976,98 @@
                     break;
             }
             
+            if (forceStop) {
+                // If stopped, just re-enable controls
+                enableControls('sorting');
+                return;
+            }
+            
             // Finish animation
             for (let i = 0; i < bars.length; i++) {
+                if (forceStop) break;
                 bars[i].classList.remove('bg-blue-500', 'bg-red-500', 'bg-yellow-500', 'bg-purple-500');
                 bars[i].classList.add('bg-green-500');
                 await sleep(5);
             }
 
-            enableControls(true);
+            enableControls('sorting');
         };
 
-        // 3. Sorting Algorithms
+        // 6. Sorting Algorithms (with forceStop checks)
         const bubbleSort = async (bars) => {
             for (let i = 0; i < sortingArray.length - 1; i++) {
                 for (let j = 0; j < sortingArray.length - i - 1; j++) {
-                    // Highlight comparing bars
+                    if (forceStop) return;
+                    
                     bars[j].classList.add('bg-red-500');
                     bars[j+1].classList.add('bg-red-500');
                     await sleep(sortSpeed);
+                    if (forceStop) return;
 
                     if (sortingArray[j] > sortingArray[j+1]) {
-                        // Swap
                         [sortingArray[j], sortingArray[j+1]] = [sortingArray[j+1], sortingArray[j]];
-                        bars[j].style.height = `${sortingArray[j]}%`;
-                        bars[j+1].style.height = `${sortingArray[j+1]}%`;
+                        drawArray(sortingArray, visualizerSorting, true); // Redraw to update labels
+                        // Re-add highlights after redraw
+                        bars[j].classList.add('bg-red-500'); 
+                        bars[j+1].classList.add('bg-red-500');
                         await sleep(sortSpeed);
+                        if (forceStop) return;
                     }
                     
-                    // Remove highlight
                     bars[j].classList.remove('bg-red-500');
                     bars[j+1].classList.remove('bg-red-500');
                 }
-                // Mark sorted bar
+                if (forceStop) return;
                 bars[sortingArray.length - 1 - i].classList.add('bg-green-500');
             }
-            bars[0].classList.add('bg-green-500');
+            if (!forceStop) bars[0].classList.add('bg-green-500');
         };
 
         const insertionSort = async (bars) => {
             for (let i = 1; i < sortingArray.length; i++) {
+                if (forceStop) return;
                 let key = sortingArray[i];
                 let j = i - 1;
                 
                 bars[i].classList.add('bg-red-500'); // Current element to insert
                 await sleep(sortSpeed);
+                if (forceStop) return;
 
                 while (j >= 0 && sortingArray[j] > key) {
+                    if (forceStop) return;
                     bars[j].classList.add('bg-yellow-500'); // Element being shifted
                     sortingArray[j + 1] = sortingArray[j];
-                    bars[j + 1].style.height = `${sortingArray[j + 1]}%`;
                     j = j - 1;
-                    await sleep(sortSpeed);
                     
-                    // Reset shift color
-                    for(let k=i; k>j; k--) bars[k].classList.remove('bg-yellow-500');
+                    drawArray(sortingArray, visualizerSorting, true);
+                    // Re-add highlights
+                    bars[i].classList.add('bg-red-500');
+                    for (let k = j + 2; k <= i; k++) bars[k].classList.add('bg-yellow-500');
+
+                    await sleep(sortSpeed);
+                    if (forceStop) return;
                 }
                 sortingArray[j + 1] = key;
-                bars[j + 1].style.height = `${key}%`;
                 
-                bars[i].classList.remove('bg-red-500');
-            }
-            // Mark all as sorted
-            for (let i = 0; i < bars.length; i++) {
-                bars[i].classList.add('bg-green-500');
+                drawArray(sortingArray, visualizerSorting, true);
+                if (forceStop) return;
+
+                await sleep(sortSpeed);
             }
         };
 
         const selectionSort = async (bars) => {
             for (let i = 0; i < sortingArray.length - 1; i++) {
+                if (forceStop) return;
                 let minIdx = i;
                 bars[i].classList.add('bg-red-500'); // Current position to fill
 
                 for (let j = i + 1; j < sortingArray.length; j++) {
+                    if (forceStop) return;
                     bars[j].classList.add('bg-yellow-500'); // Current element being checked
                     await sleep(sortSpeed);
+                    if (forceStop) return;
+
                     if (sortingArray[j] < sortingArray[minIdx]) {
                         if (minIdx !== i) bars[minIdx].classList.remove('bg-purple-500'); // Remove old min highlight
                         minIdx = j;
@@ -830,185 +1075,217 @@
                     }
                     bars[j].classList.remove('bg-yellow-500');
                 }
+                
+                if (forceStop) return;
 
                 // Swap
                 [sortingArray[i], sortingArray[minIdx]] = [sortingArray[minIdx], sortingArray[i]];
-                bars[i].style.height = `${sortingArray[i]}%`;
-                bars[minIdx].style.height = `${sortingArray[minIdx]}%`;
+                drawArray(sortingArray, visualizerSorting, true);
 
-                bars[minIdx].classList.remove('bg-purple-500');
-                bars[i].classList.remove('bg-red-500');
-                bars[i].classList.add('bg-green-500'); // Mark as sorted
+                if(bars[minIdx]) bars[minIdx].classList.remove('bg-purple-500');
+                if(bars[i]) bars[i].classList.remove('bg-red-500');
+                if(bars[i]) bars[i].classList.add('bg-green-500'); // Mark as sorted
+                await sleep(sortSpeed);
             }
-            bars[sortingArray.length - 1].classList.add('bg-green-500');
+            if (!forceStop && bars[sortingArray.length - 1]) {
+                bars[sortingArray.length - 1].classList.add('bg-green-500');
+            }
         };
 
         const heapSort = async (bars) => {
             let n = sortingArray.length;
+            if (forceStop) return;
 
             // Build max heap
             for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
+                if (forceStop) return;
                 await heapify(bars, n, i);
             }
 
             // One by one extract an element from heap
             for (let i = n - 1; i > 0; i--) {
-                // Move current root to end
+                if (forceStop) return;
                 bars[0].classList.add('bg-red-500');
                 bars[i].classList.add('bg-red-500');
                 await sleep(sortSpeed);
+                if (forceStop) return;
 
                 [sortingArray[0], sortingArray[i]] = [sortingArray[i], sortingArray[0]];
-                bars[0].style.height = `${sortingArray[0]}%`;
-                bars[i].style.height = `${sortingArray[i]}%`;
+                drawArray(sortingArray, visualizerSorting, true);
                 
-                bars[0].classList.remove('bg-red-500');
-                bars[i].classList.remove('bg-red-500');
                 bars[i].classList.add('bg-green-500'); // Mark as sorted
 
                 // call max heapify on the reduced heap
                 await heapify(bars, i, 0);
             }
-            bars[0].classList.add('bg-green-500');
+            if (!forceStop && bars[0]) bars[0].classList.add('bg-green-500');
         };
 
         const heapify = async (bars, n, i) => {
+            if (forceStop) return;
             let largest = i; // Initialize largest as root
             let left = 2 * i + 1;
             let right = 2 * i + 2;
 
-            bars[i].classList.add('bg-red-500'); // Root of subtree
-            if (left < n) bars[left].classList.add('bg-yellow-500');
-            if (right < n) bars[right].classList.add('bg-yellow-500');
+            if(bars[i]) bars[i].classList.add('bg-red-500'); // Root of subtree
+            if (left < n && bars[left]) bars[left].classList.add('bg-yellow-500');
+            if (right < n && bars[right]) bars[right].classList.add('bg-yellow-500');
             await sleep(sortSpeed);
+            if (forceStop) return;
 
-            // If left child is larger than root
             if (left < n && sortingArray[left] > sortingArray[largest]) {
                 largest = left;
             }
-
-            // If right child is larger than largest so far
             if (right < n && sortingArray[right] > sortingArray[largest]) {
                 largest = right;
             }
 
-            // If largest is not root
             if (largest !== i) {
                 [sortingArray[i], sortingArray[largest]] = [sortingArray[largest], sortingArray[i]];
-                bars[i].style.height = `${sortingArray[i]}%`;
-                bars[largest].style.height = `${sortingArray[largest]}%`;
+                
+                drawArray(sortingArray, visualizerSorting, true);
                 
                 await sleep(sortSpeed);
-                bars[i].classList.remove('bg-red-500');
-                if (left < n) bars[left].classList.remove('bg-yellow-500');
-                if (right < n) bars[right].classList.remove('bg-yellow-500');
+                if (forceStop) return;
 
                 // Recursively heapify the affected sub-tree
                 await heapify(bars, n, largest);
             } else {
-                 bars[i].classList.remove('bg-red-500');
-                if (left < n) bars[left].classList.remove('bg-yellow-500');
-                if (right < n) bars[right].classList.remove('bg-yellow-500');
+                 if(bars[i]) bars[i].classList.remove('bg-red-500');
+                 if (left < n && bars[left]) bars[left].classList.remove('bg-yellow-500');
+                 if (right < n && bars[right]) bars[right].classList.remove('bg-yellow-500');
             }
         };
 
         const mergeSort = async (bars, left, right) => {
-            if (left >= right) return;
+            if (forceStop || left >= right) return;
             
             const mid = Math.floor((left + right) / 2);
             
             await mergeSort(bars, left, mid);
+            if (forceStop) return;
             await mergeSort(bars, mid + 1, right);
+            if (forceStop) return;
             await merge(bars, left, mid, right);
         };
         
         const merge = async (bars, left, mid, right) => {
+            if (forceStop) return;
             let leftArr = sortingArray.slice(left, mid + 1);
             let rightArr = sortingArray.slice(mid + 1, right + 1);
             
             let i = 0, j = 0, k = left;
             
             while (i < leftArr.length && j < rightArr.length) {
-                // Highlight comparison
+                if (forceStop) return;
                 if(bars[left + i]) bars[left + i].classList.add('bg-red-500');
                 if(bars[mid + 1 + j]) bars[mid + 1 + j].classList.add('bg-red-500');
                 await sleep(sortSpeed);
+                if (forceStop) return;
                 
                 if (leftArr[i] <= rightArr[j]) {
                     sortingArray[k] = leftArr[i];
-                    if(bars[k]) bars[k].style.height = `${leftArr[i]}%`;
-                    if(bars[k]) bars[k].classList.add('bg-yellow-500'); // Show merging
                     i++;
                 } else {
                     sortingArray[k] = rightArr[j];
-                    if(bars[k]) bars[k].style.height = `${rightArr[j]}%`;
-                    if(bars[k]) bars[k].classList.add('bg-yellow-500'); // Show merging
                     j++;
                 }
                 
-                await sleep(sortSpeed);
-                // Reset colors
-                for(let bar = left; bar <= right; bar++) {
-                     if(bars[bar]) bars[bar].classList.remove('bg-red-500', 'bg-yellow-500');
+                drawArray(sortingArray, visualizerSorting, true);
+                for(let barIdx = left; barIdx <= right; barIdx++) {
+                     if(bars[barIdx]) bars[barIdx].classList.add('bg-yellow-500');
                 }
+                
+                await sleep(sortSpeed);
+                if (forceStop) return;
                 k++;
             }
             
             while (i < leftArr.length) {
+                if (forceStop) return;
                 sortingArray[k] = leftArr[i];
-                if(bars[k]) bars[k].style.height = `${leftArr[i]}%`;
-                if(bars[k]) bars[k].classList.add('bg-yellow-500');
+                drawArray(sortingArray, visualizerSorting, true);
+                for(let barIdx = left; barIdx <= right; barIdx++) {
+                     if(bars[barIdx]) bars[barIdx].classList.add('bg-yellow-500');
+                }
                 await sleep(sortSpeed);
-                if(bars[k]) bars[k].classList.remove('bg-yellow-500');
                 i++;
                 k++;
             }
             
             while (j < rightArr.length) {
+                if (forceStop) return;
                 sortingArray[k] = rightArr[j];
-                if(bars[k]) bars[k].style.height = `${rightArr[j]}%`;
-                if(bars[k]) bars[k].classList.add('bg-yellow-500');
+                drawArray(sortingArray, visualizerSorting, true);
+                for(let barIdx = left; barIdx <= right; barIdx++) {
+                     if(bars[barIdx]) bars[barIdx].classList.add('bg-yellow-500');
+                }
                 await sleep(sortSpeed);
-                if(bars[k]) bars[k].classList.remove('bg-yellow-500');
                 j++;
                 k++;
             }
             
+            if (forceStop) return;
             // Mark as sorted in this range
             for (let barIdx = left; barIdx <= right; barIdx++) {
-                if(bars[barIdx]) bars[barIdx].classList.add('bg-green-500');
+                if(bars[barIdx]) {
+                    bars[barIdx].classList.remove('bg-yellow-500');
+                    if (right - left === sortingArray.length - 1) { // Only if it's the final merge
+                        bars[barIdx].classList.add('bg-green-500');
+                    }
+                }
             }
         };
 
         const quickSort = async (bars, low, high) => {
-            if (low < high) {
-                let pi = await partition(bars, low, high);
-                await quickSort(bars, low, pi - 1);
-                await quickSort(bars, pi + 1, high);
+            if (forceStop || low < 0 || high < 0 || low >= high) {
+                if(low >= 0 && low < bars.length) bars[low]?.classList.add('bg-green-500');
+                if(high >= 0 && high < bars.length) bars[high]?.classList.add('bg-green-500');
+                return;
             }
+            
+            let pi = await partition(bars, low, high);
+            if (forceStop) return;
+
+            // Mark pivot as sorted
+            if (pi >= 0 && pi < bars.length) bars[pi].classList.add('bg-green-500');
+
+            await Promise.all([
+                quickSort(bars, low, pi - 1),
+                quickSort(bars, pi + 1, high)
+            ]);
         };
         
         const partition = async (bars, low, high) => {
+            if (forceStop) return low; // return a valid index
+            
             let pivot = sortingArray[high];
             let i = low - 1;
             
             if(bars[high]) bars[high].classList.add('bg-yellow-500'); // Pivot color
             
             for (let j = low; j < high; j++) {
+                if (forceStop) return i;
                 if(bars[j]) bars[j].classList.add('bg-red-500'); // Current element
                 await sleep(sortSpeed);
+                if (forceStop) return i;
                 
                 if (sortingArray[j] < pivot) {
                     i++;
-                    
-                    // Highlight swap elements
                     if(bars[i]) bars[i].classList.add('bg-purple-500');
                     if(bars[j]) bars[j].classList.add('bg-purple-500');
                     await sleep(sortSpeed);
+                    if (forceStop) return i;
 
                     [sortingArray[i], sortingArray[j]] = [sortingArray[j], sortingArray[i]];
-                    if(bars[i]) bars[i].style.height = `${sortingArray[i]}%`;
-                    if(bars[j]) bars[j].style.height = `${sortingArray[j]}%`;
+                    drawArray(sortingArray, visualizerSorting, true);
+                    
+                    // Re-apply colors
+                    if(bars[high]) bars[high].classList.add('bg-yellow-500');
+                    for (let k = low; k < high; k++) {
+                        if (k === j) if(bars[k]) bars[k].classList.add('bg-red-500');
+                        if (k === i) if(bars[k]) bars[k].classList.add('bg-purple-500');
+                    }
                     
                     if(bars[i]) bars[i].classList.remove('bg-purple-500');
                     if(bars[j]) bars[j].classList.remove('bg-purple-500');
@@ -1016,19 +1293,14 @@
                 if(bars[j]) bars[j].classList.remove('bg-red-500');
             }
             
+            if (forceStop) return i;
+            
             // Swap pivot into place
             [sortingArray[i + 1], sortingArray[high]] = [sortingArray[high], sortingArray[i + 1]];
-            if(bars[i+1]) bars[i + 1].style.height = `${sortingArray[i + 1]}%`;
-            if(bars[high]) bars[high].style.height = `${sortingArray[high]}%`;
+            drawArray(sortingArray, visualizerSorting, true);
             
             await sleep(sortSpeed);
             if(bars[high]) bars[high].classList.remove('bg-yellow-500');
-            
-            // Mark all partitioned elements
-            for(let k = low; k <= high; k++) {
-                if (k !== i + 1 && bars[k]) bars[k].classList.remove('bg-green-500');
-            }
-            if(bars[i+1]) bars[i + 1].classList.add('bg-green-500'); // Correct position
             
             return i + 1;
         };
@@ -1036,78 +1308,61 @@
 
         // --- SEARCHING ALGORITHM LOGIC ---
 
-        const generateSearchingArray = (sorted = false) => {
-            if (isSearching) return;
-            searchingArray = [];
-            visualizerSearching.innerHTML = '';
-            for (let i = 0; i < arraySize; i++) {
-                const value = Math.floor(Math.random() * 90) + 10;
-                searchingArray.push(value);
-            }
-
-            if (sorted) {
-                searchingArray.sort((a, b) => a - b);
-            }
-
-            for (let i = 0; i < arraySize; i++) {
-                const bar = document.createElement('div');
-                bar.style.height = `${searchingArray[i]}%`;
-                bar.classList.add('sort-bar', 'bg-blue-500');
-                bar.style.width = `${100 / arraySize}%`;
-                
-                // Add value label
-                const label = document.createElement('span');
-                label.innerText = searchingArray[i];
-                label.classList.add('text-xs', 'text-white', 'absolute', 'bottom-1', 'left-1/2', '-translate-x-1/2');
-                if (arraySize > 50) label.classList.add('hidden'); // Hide if too crowded
-                bar.style.position = 'relative';
-                bar.appendChild(label);
-
-                visualizerSearching.appendChild(bar);
-            }
-        };
-
         const startSearching = async () => {
             const target = parseInt(targetInputSearching.value, 10);
             if (isNaN(target)) {
-                // Avoid using alert()
                 console.error("Please enter a valid number as target.");
+                targetInputSearching.value = "ERROR: Invalid Target";
                 return;
             }
             
-            isSearching = true;
-            btnStartSearching.disabled = true;
-            btnGenerateArraySearching.disabled = true;
-            btnStartSearching.classList.add('opacity-50', 'cursor-not-allowed');
-            btnGenerateArraySearching.classList.add('opacity-50', 'cursor-not-allowed');
-
-
+            if (searchingArray.length === 0) {
+                 useCustomArray(true);
+                 if (searchingArray.length === 0) generateArray(true);
+            }
+            
+            disableControls('searching');
+            const bars = visualizerSearching.getElementsByClassName('sort-bar');
             let found = false;
 
             if (currentSearchingAlgorithm === 'linearSearch') {
-                if (currentView === 'searching') generateSearchingArray(false); // Unsorted
-                await sleep(100); // allow render
-                found = await linearSearch(visualizerSearching.getElementsByClassName('sort-bar'), target);
+                if (currentView === 'searching') {
+                    // Ensure it's unsorted if it was just sorted
+                    const isSorted = searchingArray.every((v, i, a) => !i || a[i-1] <= v);
+                    if (isSorted) {
+                        searchingArray.sort(() => Math.random() - 0.5); // Shuffle
+                        drawArray(searchingArray, visualizerSearching, true);
+                        await sleep(100);
+                    }
+                }
+                found = await linearSearch(bars, target);
             } else if (currentSearchingAlgorithm === 'binarySearch') {
-                if (currentView === 'searching') generateSearchingArray(true); // Sorted
-                await sleep(100); // allow render
-                found = await binarySearch(visualizerSearching.getElementsByClassName('sort-bar'), target);
+                // Ensure it's sorted
+                const isSorted = searchingArray.every((v, i, a) => !i || a[i-1] <= v);
+                if (!isSorted) {
+                    searchingArray.sort((a,b) => a-b);
+                    drawArray(searchingArray, visualizerSearching, true);
+                    await sleep(100);
+                }
+                found = await binarySearch(bars, target);
+            }
+            
+            if (forceStop) {
+                enableControls('searching');
+                return;
             }
             
             console.log("Found:", found);
-
-            isSearching = false;
-            btnStartSearching.disabled = false;
-            btnGenerateArraySearching.disabled = false;
-            btnStartSearching.classList.remove('opacity-50', 'cursor-not-allowed');
-            btnGenerateArraySearching.classList.remove('opacity-50', 'cursor-not-allowed');
-
+            enableControls('searching');
         };
 
         const linearSearch = async (bars, target) => {
             for (let i = 0; i < bars.length; i++) {
+                if (forceStop) return false;
                 bars[i].classList.add('bg-red-500'); // Highlight current
                 await sleep(sortSpeed);
+                if (forceStop) return false;
+
                 if (searchingArray[i] === target) {
                     bars[i].classList.remove('bg-red-500');
                     bars[i].classList.add('bg-green-500');
@@ -1124,6 +1379,7 @@
             let high = searchingArray.length - 1;
 
             while (low <= high) {
+                if (forceStop) return false;
                 let mid = Math.floor((low + high) / 2);
                 
                 // Highlight range
@@ -1133,6 +1389,7 @@
                 if(bars[mid]) bars[mid].classList.remove('bg-yellow-500');
                 if(bars[mid]) bars[mid].classList.add('bg-red-500'); // Highlight mid
                 await sleep(sortSpeed * 2);
+                if (forceStop) return false;
 
                 if (searchingArray[mid] === target) {
                     if(bars[mid]) bars[mid].classList.remove('bg-red-500');
@@ -1171,6 +1428,7 @@
                 this.isStart = row === startNode.row && col === startNode.col;
                 this.isEnd = row === endNode.row && col === endNode.col;
                 this.isWall = false;
+                this.isVisited = false;
                 this.distance = Infinity; // g(n) for A*
                 this.f = Infinity; // f(n) for A*
                 this.h = Infinity; // h(n) for A*
@@ -1186,6 +1444,16 @@
                 this.domElement.addEventListener('mousedown', () => handleMouseDown(row, col));
                 this.domElement.addEventListener('mouseenter', () => handleMouseEnter(row, col));
                 this.domElement.addEventListener('mouseup', () => handleMouseUp());
+                this.domElement.addEventListener('touchstart', (e) => { e.preventDefault(); handleMouseDown(row, col); });
+                this.domElement.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    const element = document.elementFromPoint(touch.clientX, touch.clientY);
+                    if(element && element.classList.contains('grid-cell')) {
+                        handleMouseEnter(element.dataset.row, element.dataset.col);
+                    }
+                });
+                this.domElement.addEventListener('touchend', (e) => { e.preventDefault(); handleMouseUp(); });
             }
         }
         
@@ -1209,11 +1477,12 @@
         
         // 3. Reset Grid
         const resetGrid = () => {
-            if (isPathfinding) return;
+            if (isPathfinding) stopAlgorithm();
             for(let r=0; r < GRID_ROWS; r++) {
                 for (let c=0; c < GRID_COLS; c++) {
                     const node = grid[r][c];
                     node.isWall = false;
+                    node.isVisited = false;
                     node.distance = Infinity;
                     node.f = Infinity;
                     node.h = Infinity;
@@ -1224,6 +1493,7 @@
                          node.domElement.classList.add('start');
                     } else {
                         node.isStart = false;
+                        node.domElement.classList.remove('start');
                     }
                     
                     if (r === endNode.row && c === endNode.col) {
@@ -1231,20 +1501,23 @@
                         node.domElement.classList.add('end');
                     } else {
                         node.isEnd = false;
+                        node.domElement.classList.remove('end');
                     }
                 }
             }
         };
         
+        // 4. Clear Path
         const clearSearch = () => {
+             if (isPathfinding) stopAlgorithm();
              for(let r=0; r < GRID_ROWS; r++) {
                 for (let c=0; c < GRID_COLS; c++) {
                     const node = grid[r][c];
+                    node.isVisited = false;
                     node.distance = Infinity;
                     node.f = Infinity;
                     node.h = Infinity;
                     node.previousNode = null;
-                    node.isVisited = false; // Reset visited state
                     if (!node.isStart && !node.isEnd && !node.isWall) {
                          node.domElement.classList.remove('visited', 'path');
                     }
@@ -1252,7 +1525,7 @@
             }
         }
 
-        // 4. Mouse Handlers for Walls
+        // 5. Mouse Handlers for Walls
         const handleMouseDown = (row, col) => {
             if (isPathfinding) return;
             const node = grid[row][col];
@@ -1269,6 +1542,11 @@
         
         const handleMouseEnter = (row, col) => {
             if (isPathfinding) return;
+            // Ensure row/col are valid numbers
+            row = parseInt(row, 10);
+            col = parseInt(col, 10);
+            if (isNaN(row) || isNaN(col)) return;
+
             const node = grid[row][col];
             if (isDrawingWalls) {
                 if (!node.isStart && !node.isEnd) {
@@ -1300,43 +1578,58 @@
             isMovingEnd = false;
         };
         
-        // 5. Start Pathfinding
+        // 6. Start Pathfinding
         const startPathfinding = async () => {
-            disableControls(false);
-            clearSearch();
+            disableControls('pathfinding');
+            clearSearch(); // Clear previous path/visited nodes
             
             const start = grid[startNode.row][startNode.col];
             const end = grid[endNode.row][endNode.col];
             
-            if (currentPathfindingAlgorithm === 'dijkstra') {
-                await dijkstra(start, end);
-            } else if (currentPathfindingAlgorithm === 'aStar') {
-                await aStar(start, end);
-            } else if (currentPathfindingAlgorithm === 'bfs') {
-                await bfs(start, end);
-            } else if (currentPathfindingAlgorithm === 'dfs') {
-                await dfs(start, end);
+            let found = false;
+            switch (currentPathfindingAlgorithm) {
+                case 'dijkstra':
+                    found = await dijkstra(start, end);
+                    break;
+                case 'aStar':
+                    found = await aStar(start, end);
+                    break;
+                case 'bfs':
+                    found = await bfs(start, end);
+                    break;
+                case 'dfs':
+                    found = await dfs(start, end);
+                    break;
             }
             
-            enableControls(false);
+            if (forceStop) {
+                enableControls('pathfinding');
+                return;
+            }
+
+            if (found) {
+                await animateShortestPath(end);
+            } else {
+                console.log("No path found");
+                // You could add a modal/toast here to inform the user
+            }
+            
+            enableControls('pathfinding');
         };
         
-        // 6. Dijkstra's Algorithm
+        // 7. Pathfinding Algorithms (with forceStop)
         const dijkstra = async (start, end) => {
             const unvisitedNodes = getAllNodes();
             start.distance = 0;
             
             while(!!unvisitedNodes.length) {
+                if (forceStop) return false;
                 sortNodesByDistance(unvisitedNodes);
                 const closestNode = unvisitedNodes.shift();
                 
                 if (closestNode.isWall) continue;
                 
-                // If trapped
-                if (closestNode.distance === Infinity) {
-                    console.log("No path found");
-                    return;
-                }
+                if (closestNode.distance === Infinity) return false; // Trapped
                 
                 closestNode.isVisited = true;
                 if (!closestNode.isStart && !closestNode.isEnd) {
@@ -1345,30 +1638,28 @@
                 
                 await sleep(10); // Speed of visualization
                 
-                if (closestNode === end) {
-                    await animateShortestPath(end);
-                    return;
-                }
+                if (closestNode === end) return true; // Found
                 
                 updateUnvisitedNeighbors(closestNode);
             }
+            return false;
         };
 
-        // A* Search
         const aStar = async (start, end) => {
             const openSet = [start];
-            start.distance = 0;
+            start.distance = 0; // g(n)
             start.h = heuristic(start, end);
-            start.f = start.h;
+            start.f = start.h; // f(n) = g(n) + h(n)
 
             while (!!openSet.length) {
-                // Sort by f-score
+                if (forceStop) return false;
+                
                 openSet.sort((a, b) => a.f - b.f);
                 const currentNode = openSet.shift();
 
                 if (currentNode.isWall) continue;
-                
                 if (currentNode.isVisited) continue; // Already processed
+                
                 currentNode.isVisited = true;
                 if (!currentNode.isStart && !currentNode.isEnd) {
                     currentNode.domElement.classList.add('visited');
@@ -1376,14 +1667,11 @@
                 
                 await sleep(10);
 
-                if (currentNode === end) {
-                    await animateShortestPath(end);
-                    return;
-                }
+                if (currentNode === end) return true; // Found
 
-                const neighbors = getNeighbors(currentNode, true); // Get all neighbors (visited or not)
+                const neighbors = getNeighbors(currentNode, true); // Get all neighbors
                 for (const neighbor of neighbors) {
-                    if (neighbor.isWall) continue;
+                    if (neighbor.isWall || neighbor.isVisited) continue;
 
                     const tentativeGScore = currentNode.distance + 1; // All weights are 1
                     
@@ -1399,7 +1687,7 @@
                     }
                 }
             }
-            console.log("No path found (A*)");
+            return false; // Not found
         };
 
         const heuristic = (nodeA, nodeB) => {
@@ -1409,12 +1697,12 @@
             return dRow + dCol;
         };
         
-        // Breadth-First Search (BFS)
         const bfs = async (start, end) => {
             const queue = [start];
             start.isVisited = true;
             
             while (!!queue.length) {
+                if (forceStop) return false;
                 const currentNode = queue.shift();
                 
                 if (currentNode.isWall) continue;
@@ -1424,10 +1712,7 @@
                 }
                 await sleep(10);
                 
-                if (currentNode === end) {
-                    await animateShortestPath(end);
-                    return;
-                }
+                if (currentNode === end) return true; // Found
                 
                 const neighbors = getNeighbors(currentNode, false); // Get unvisited neighbors
                 for (const neighbor of neighbors) {
@@ -1438,31 +1723,25 @@
                     }
                 }
             }
-            console.log("No path found (BFS)");
+            return false; // Not found
         };
 
-        // Depth-First Search (DFS)
         const dfs = async (start, end) => {
             const stack = [start];
             
             while (!!stack.length) {
+                if (forceStop) return false;
                 const currentNode = stack.pop();
                 
-                if (currentNode.isWall) continue;
+                if (currentNode.isWall || currentNode.isVisited) continue;
                 
-                if (currentNode.isVisited) continue;
                 currentNode.isVisited = true;
-
                 if (!currentNode.isStart && !currentNode.isEnd) {
                     currentNode.domElement.classList.add('visited');
                 }
                 await sleep(10);
 
-                if (currentNode === end) {
-                    // Note: DFS path is not guaranteed to be shortest
-                    await animateShortestPath(end);
-                    return;
-                }
+                if (currentNode === end) return true; // Found
                 
                 const neighbors = getNeighbors(currentNode, false); // Get unvisited neighbors
                 for (const neighbor of neighbors) {
@@ -1472,9 +1751,10 @@
                     }
                 }
             }
-            console.log("No path found (DFS)");
+            return false; // Not found
         };
         
+        // 8. Pathfinding Helper Functions
         const sortNodesByDistance = (nodes) => {
             nodes.sort((a, b) => a.distance - b.distance);
         };
@@ -1523,6 +1803,7 @@
             path.reverse();
             
             for (const node of path) {
+                if (forceStop) return;
                 if (!node.isStart && !node.isEnd) {
                     node.domElement.classList.add('path');
                     await sleep(25);
@@ -1534,9 +1815,7 @@
         // --- DYNAMIC PROGRAMMING LOGIC ---
         
         const startDP = async () => {
-            isDPRunning = true;
-            btnStartDp.disabled = true;
-            btnStartDp.classList.add('opacity-50', 'cursor-not-allowed');
+            disableControls('dp');
             dpOutputContainer.innerHTML = '<p class="text-yellow-400">Working...</p>';
 
             switch(currentDPAlgorithm) {
@@ -1551,9 +1830,10 @@
                     break;
             }
 
-            isDPRunning = false;
-            btnStartDp.disabled = false;
-            btnStartDp.classList.remove('opacity-50', 'cursor-not-allowed');
+            if (forceStop) {
+                dpOutputContainer.innerHTML += '<p class="text-red-500 font-bold">STOPPED BY USER</p>';
+            }
+            enableControls('dp');
         };
         
         const visualizeFibonacci = async () => {
@@ -1570,6 +1850,7 @@
             dpOutputContainer.appendChild(table);
 
             const fib = async (num) => {
+                if (forceStop) return -1; // Error code for stop
                 if (num <= 1) return num;
                 
                 let cell = table.querySelector(`[data-index='${num}']`);
@@ -1580,20 +1861,28 @@
                     cell.innerHTML = `fib(${num}) = ?`;
                     table.appendChild(cell);
                     await sleep(200);
+                    if (forceStop) return -1;
                 }
 
-                if (memo[num]) {
+                if (memo[num] !== null) {
                      cell.classList.add('bg-yellow-500');
                      await sleep(200);
+                     if (forceStop) return -1;
                      cell.classList.remove('bg-yellow-500');
                     return memo[num];
                 }
                 
                 cell.classList.add('bg-blue-500'); // Mark as computing
                 await sleep(200);
+                if (forceStop) return -1;
 
 
-                let res = (await fib(num - 1)) + (await fib(num - 2));
+                let res1 = await fib(num - 1);
+                if (forceStop) return -1;
+                let res2 = await fib(num - 2);
+                if (forceStop) return -1;
+                
+                let res = res1 + res2;
                 memo[num] = res;
                 
                 cell.innerHTML = `fib(${num}) = ${res}`;
@@ -1604,7 +1893,9 @@
             };
 
             const result = await fib(n);
-            dpOutputContainer.innerHTML += `<h3 class="text-xl font-bold mt-4">Result: fib(${n}) = ${result}</h3>`;
+            if (!forceStop) {
+                dpOutputContainer.innerHTML += `<h3 class="text-xl font-bold mt-4">Result: fib(${n}) = ${result}</h3>`;
+            }
         };
         
         const visualizeKnapsack = async () => {
@@ -1614,7 +1905,10 @@
                 <p class="text-gray-500 text-sm">This would involve dynamically creating and filling a 2D grid (N x W) to show how the <code class="font-mono bg-gray-700 px-1 rounded">dp[i][w]</code> values are computed step-by-step.</p>
             `;
             console.log("Knapsack logic to be implemented");
-            await sleep(500); // Simulate work
+            for (let i=0; i<5; i++) {
+                if (forceStop) return;
+                await sleep(100); // Simulate work
+            }
         };
         
         const visualizeLCS = async () => {
@@ -1624,7 +1918,10 @@
                 <p class="text-gray-500 text-sm">This would involve creating a 2D grid (M x N) for the two strings and animating the cell-by-cell comparison to fill the <code class="font-mono bg-gray-700 px-1 rounded">dp[i][j]</code> table.</p>
             `;
             console.log("LCS logic to be implemented");
-            await sleep(500); // Simulate work
+            for (let i=0; i<5; i++) {
+                if (forceStop) return;
+                await sleep(100); // Simulate work
+            }
         };
 
 
@@ -1642,56 +1939,53 @@
                 updateComplexityInfo();
             });
             speedSliderSorting.addEventListener('input', (e) => {
-                // Slower speed means longer sleep, so we invert the slider value
                 sortSpeed = 510 - e.target.value;
             });
              sizeSliderSorting.addEventListener('input', (e) => {
                 arraySize = e.target.value;
-                if(currentView === 'sorting') generateArray();
-                if(currentView === 'searching') {
-                    if (currentSearchingAlgorithm === 'binarySearch') {
-                        generateSearchingArray(true);
-                    } else {
-                        generateSearchingArray(false);
-                    }
-                }
+                generateArray(false); // Generate new random array on size change
             });
-            btnGenerateArray.addEventListener('click', generateArray);
+            btnGenerateArray.addEventListener('click', () => generateArray(false));
+            btnUseCustomArraySorting.addEventListener('click', () => useCustomArray(false));
             btnStartSorting.addEventListener('click', startSorting);
+            btnStopSorting.addEventListener('click', stopAlgorithm);
 
             // Searching Controls
             algoSelectSearching.addEventListener('change', (e) => {
                 currentSearchingAlgorithm = e.target.value;
-                if (e.target.value === 'binarySearch') {
-                    generateSearchingArray(true);
+                // Regenerate array for the new mode (sorted/unsorted)
+                const input = customArraySearching.value;
+                let newArray = parseCustomArray(input);
+                if (newArray.length > 0) {
+                    useCustomArray(true);
                 } else {
-                    generateSearchingArray(false);
+                    generateArray(true);
                 }
                 updateComplexityInfo();
             });
-            btnGenerateArraySearching.addEventListener('click', () => {
-                if (currentSearchingAlgorithm === 'binarySearch') {
-                    generateSearchingArray(true);
-                } else {
-                    generateSearchingArray(false);
-                }
-            });
+            btnGenerateArraySearching.addEventListener('click', () => generateArray(true));
+            btnUseCustomArraySearching.addEventListener('click', () => useCustomArray(true));
             btnStartSearching.addEventListener('click', startSearching);
+            btnStopSearching.addEventListener('click', stopAlgorithm);
             
             // Pathfinding Controls
             algoSelectPathfinding.addEventListener('change', (e) => {
                 currentPathfindingAlgorithm = e.target.value;
                 updateComplexityInfo();
             });
-            btnResetGrid.addEventListener('click', resetGrid); // Changed to resetGrid to keep walls
+            btnResetGrid.addEventListener('click', resetGrid);
+            btnClearPath.addEventListener('click', clearSearch);
             btnStartPathfinding.addEventListener('click', startPathfinding);
+            btnStopPathfinding.addEventListener('click', stopAlgorithm);
 
             // DP Controls
             algoSelectDp.addEventListener('change', updateDPInputs);
             btnStartDp.addEventListener('click', startDP);
+            btnStopDp.addEventListener('click', stopAlgorithm);
             
             // Global mouse up for pathfinding
             document.body.addEventListener('mouseup', handleMouseUp);
+            document.body.addEventListener('touchend', handleMouseUp);
             
             // Initial setup
             switchView('sorting'); // Start on sorting view
